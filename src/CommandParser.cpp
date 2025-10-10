@@ -8,16 +8,16 @@ void CommandParser::registerCommand(const std::string &name, Command command) {
 void CommandParser::executeCommand(const std::string &input) {
   auto space_pos = input.find(' ');
 
-  std::string commandName =
+  std::string command_name =
       (space_pos == std::string::npos) ? input : input.substr(0, space_pos);
   std::string args =
       (space_pos == std::string::npos) ? "" : input.substr(space_pos + 1);
 
-  auto it = commands.find(commandName);
+  auto it = commands.find(command_name);
 
   if (it != commands.end()) {
     it->second(args);
   } else {
-    throw std::runtime_error("Command not found: " + commandName);
+    throw std::runtime_error("Command not found: " + command_name);
   }
 }
