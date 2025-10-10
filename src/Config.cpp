@@ -42,3 +42,12 @@ void Config::load(const std::string &filename) {
 
   config_file.close();
 }
+
+// getters
+int Config::get_num_cpu() const { return num_cpu; }
+std::string Config::get_scheduler() const { return scheduler; }
+int Config::get_quantum_cycles() const { return quantum_cycles; }
+int Config::get_batch_process_freq() const { return batch_process_freq; }
+int Config::get_min_ins() const { return min_ins; }
+int Config::get_max_ins() const { return max_ins; }
+int Config::get_delay_per_exec() const { return delay_per_exec; }

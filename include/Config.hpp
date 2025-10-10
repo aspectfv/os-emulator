@@ -9,13 +9,13 @@ public:
     return instance;
   }
   void load(const std::string &filename);
-  int get_num_cpu() const { return num_cpu; }
-  std::string get_scheduler() const { return scheduler; }
-  int get_quantum_cycles() const { return quantum_cycles; }
-  int get_batch_process_freq() const { return batch_process_freq; }
-  int get_min_ins() const { return min_ins; }
-  int get_max_ins() const { return max_ins; }
-  int get_delay_per_exec() const { return delay_per_exec; }
+  int get_num_cpu() const;
+  std::string get_scheduler() const;
+  int get_quantum_cycles() const;
+  int get_batch_process_freq() const;
+  int get_min_ins() const;
+  int get_max_ins() const;
+  int get_delay_per_exec() const;
 
 private:
   Config();
