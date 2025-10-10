@@ -4,7 +4,10 @@
 
 class Config {
 public:
-  Config();
+  static Config &instance() {
+    static Config instance;
+    return instance;
+  }
   void load(const std::string &filename);
   int get_num_cpu() { return num_cpu; }
   std::string get_scheduler() { return scheduler; }
@@ -15,6 +18,15 @@ public:
   int get_delay_per_exec() { return delay_per_exec; }
 
 private:
+  Config();
+  ~Config() = default;
+
+  // delete copy and move constructors and assign operators
+  Config(const Config &) = delete;
+  Config &operator=(const Config &) = delete;
+  Config(Config &&) = delete;
+  Config &operator=(Config &&) = delete;
+
   int num_cpu;
   std::string scheduler;
   int quantum_cycles;
