@@ -1,6 +1,8 @@
 #pragma once
 #include <functional>
+#include <stdexcept>
 #include <string>
+#include <unordered_map>
 
 class CommandParser {
 public:
