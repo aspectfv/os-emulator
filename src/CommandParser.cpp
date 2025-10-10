@@ -6,12 +6,12 @@ void CommandParser::registerCommand(const std::string &name, Command command) {
 }
 
 void CommandParser::executeCommand(const std::string &input) {
-  auto spacePos = input.find(' ');
+  auto space_pos = input.find(' ');
 
   std::string commandName =
-      (spacePos == std::string::npos) ? input : input.substr(0, spacePos);
+      (space_pos == std::string::npos) ? input : input.substr(0, space_pos);
   std::string args =
-      (spacePos == std::string::npos) ? "" : input.substr(spacePos + 1);
+      (space_pos == std::string::npos) ? "" : input.substr(space_pos + 1);
 
   auto it = commands.find(commandName);
 
