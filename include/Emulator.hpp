@@ -9,9 +9,9 @@ public:
   bool process_input(const std::string &input);
 
 private:
-  CommandParser parser;
-  Config &config = Config::instance();
-  bool is_initialized = false;
+  CommandParser parser_;
+  Config &config_ = Config::instance();
+  bool is_initialized_ = false;
 
   void initialize();
   void exit();

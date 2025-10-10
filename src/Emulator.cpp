@@ -2,13 +2,13 @@
 #include <iostream>
 
 Emulator::Emulator() {
-  parser.registerCommand("exit", [this](const std::string &args) { exit(); });
-  is_initialized = true;
+  parser_.registerCommand("exit", [this](const std::string &args) { exit(); });
+  is_initialized_ = true;
 }
 
 bool Emulator::process_input(const std::string &input) {
   try {
-    parser.executeCommand(input);
+    parser_.executeCommand(input);
   } catch (const std::exception &e) {
     std::cerr << e.what() << std::endl;
 
@@ -20,14 +20,14 @@ bool Emulator::process_input(const std::string &input) {
 }
 
 void Emulator::initialize() {
-  if (is_initialized)
+  if (is_initialized_)
     throw std::runtime_error("Emulator is already initialized.");
 
   std::string config_file = "config.txt";
 
-  if (!config.load(config_file))
+  if (!config_.load(config_file))
     throw std::runtime_error("Configuration not loaded.");
 
-  is_initialized = true;
+  is_initialized_ = true;
 }
 void Emulator::exit() { throw std::runtime_error("Exiting Emulator..."); }

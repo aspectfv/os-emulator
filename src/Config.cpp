@@ -3,13 +3,13 @@
 #include <iostream>
 
 Config::Config() {
-  num_cpu = 4;
-  scheduler = "rr";
-  quantum_cycles = 5;
-  batch_process_freq = 1;
-  min_ins = 1000;
-  max_ins = 2000;
-  delay_per_exec = 0;
+  num_cpu_ = 4;
+  scheduler_ = "rr";
+  quantum_cycles_ = 5;
+  batch_process_freq_ = 1;
+  min_ins_ = 1000;
+  max_ins_ = 2000;
+  delay_per_exec_ = 0;
 }
 
 bool Config::load(const std::string &filename) {
@@ -22,19 +22,19 @@ bool Config::load(const std::string &filename) {
   std::string key, val;
   while (config_file >> key >> val) {
     if (key == "num-cpu") {
-      num_cpu = std::stoi(val);
+      num_cpu_ = std::stoi(val);
     } else if (key == "scheduler") {
-      scheduler = val;
+      scheduler_ = val;
     } else if (key == "quantum-cycles") {
-      quantum_cycles = std::stoi(val);
+      quantum_cycles_ = std::stoi(val);
     } else if (key == "batch-process-freq") {
-      batch_process_freq = std::stoi(val);
+      batch_process_freq_ = std::stoi(val);
     } else if (key == "min-ins") {
-      min_ins = std::stoi(val);
+      min_ins_ = std::stoi(val);
     } else if (key == "max-ins") {
-      max_ins = std::stoi(val);
+      max_ins_ = std::stoi(val);
     } else if (key == "delay-per-exec") {
-      delay_per_exec = std::stoi(val);
+      delay_per_exec_ = std::stoi(val);
     } else {
       std::cerr << "Unknown config key: " << key << std::endl;
     }
@@ -46,10 +46,10 @@ bool Config::load(const std::string &filename) {
 }
 
 // getters
-int Config::get_num_cpu() const { return num_cpu; }
-std::string Config::get_scheduler() const { return scheduler; }
-int Config::get_quantum_cycles() const { return quantum_cycles; }
-int Config::get_batch_process_freq() const { return batch_process_freq; }
-int Config::get_min_ins() const { return min_ins; }
-int Config::get_max_ins() const { return max_ins; }
-int Config::get_delay_per_exec() const { return delay_per_exec; }
+int Config::get_num_cpu() const { return num_cpu_; }
+std::string Config::get_scheduler() const { return scheduler_; }
+int Config::get_quantum_cycles() const { return quantum_cycles_; }
+int Config::get_batch_process_freq() const { return batch_process_freq_; }
+int Config::get_min_ins() const { return min_ins_; }
+int Config::get_max_ins() const { return max_ins_; }
+int Config::get_delay_per_exec() const { return delay_per_exec_; }

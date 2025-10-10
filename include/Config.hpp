@@ -27,11 +27,11 @@ private:
   Config(Config &&) = delete;
   Config &operator=(Config &&) = delete;
 
-  int num_cpu;
-  std::string scheduler;
-  int quantum_cycles;
-  int batch_process_freq;
-  int min_ins;
-  int max_ins;
-  int delay_per_exec;
+  int num_cpu_;
+  std::string scheduler_;
+  int quantum_cycles_;
+  int batch_process_freq_;
+  int min_ins_;
+  int max_ins_;
+  int delay_per_exec_;
 };
