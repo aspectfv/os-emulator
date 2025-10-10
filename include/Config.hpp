@@ -8,7 +8,7 @@ public:
     static Config instance;
     return instance;
   }
-  void load(const std::string &filename);
+  bool load(const std::string &filename);
   int get_num_cpu() const;
   std::string get_scheduler() const;
   int get_quantum_cycles() const;

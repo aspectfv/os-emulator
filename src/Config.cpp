@@ -1,7 +1,6 @@
 #include "Config.hpp"
 #include <fstream>
 #include <iostream>
-#include <stdexcept>
 
 Config::Config() {
   num_cpu = 4;
@@ -13,10 +12,11 @@ Config::Config() {
   delay_per_exec = 0;
 }
 
-void Config::load(const std::string &filename) {
+bool Config::load(const std::string &filename) {
   std::ifstream config_file(filename);
   if (!config_file.is_open()) {
-    throw std::runtime_error("Could not open config file: " + filename);
+    std::cerr << "Failed to open config file: " << filename << std::endl;
+    return false;
   }
 
   std::string key, val;
@@ -41,6 +41,8 @@ void Config::load(const std::string &filename) {
   }
 
   config_file.close();
+
+  return true;
 }
 
 // getters
