@@ -21,6 +21,7 @@ add_executable(OSEmulator
   src/main.cpp
   src/Config.cpp
   src/Emulator.cpp
+  src/Process.cpp
 )
 
 target_include_directories(OSEmulator PRIVATE include)
