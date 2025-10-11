@@ -23,13 +23,14 @@ private:
   std::jthread cycle_thread_;
   int cpu_cycles_ = 0;
 
-  // single core for now
   std::vector<CPUCore> cores_;
 
   std::unique_ptr<IScheduler> scheduler_;
 
-  // command handlers
+  // cpu cycle loop
   void cycle(std::stop_token st);
+
+  // command handlers
   void initialize();
   void exit();
   void screen(const std::string &args);

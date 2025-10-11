@@ -25,6 +25,8 @@ bool Config::load(const std::string &filename) {
       num_cpu_ = std::stoi(val);
     } else if (key == "scheduler") {
       scheduler_ = val;
+      scheduler_.erase(std::remove(scheduler_.begin(), scheduler_.end(), '\"'),
+                       scheduler_.end()); // remove quotes if any
     } else if (key == "quantum-cycles") {
       quantum_cycles_ = std::stoi(val);
     } else if (key == "batch-process-freq") {

@@ -7,6 +7,8 @@ public:
   virtual void add_process(Process *process) = 0;
   virtual Process *get_next_process() = 0;
   virtual bool has_processes() const = 0;
+  virtual bool is_running() const = 0;
+  virtual void start() = 0;
 };
 
 struct QueuedProcess {

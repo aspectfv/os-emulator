@@ -6,11 +6,17 @@
 
 class Process {
 public:
+  enum class ProcessState { NEW, READY, RUNNING, WAITING, TERMINATED };
+
   Process(int id, const std::string &name, const std::string &created_at);
   void execute_current_instruction();
+  bool is_finished() const;
+  int is_quantum_expired() const;
   void
   set_instructions(std::vector<std::unique_ptr<IInstruction>> &&instructions);
+  void set_state(ProcessState state);
   void set_quantum_remaining(int quantum_cycles);
+  void decrement_quantum_remaining();
 
 private:
   int id_;
@@ -19,6 +25,6 @@ private:
   std::vector<std::unique_ptr<IInstruction>> instructions_;
   int total_instructions_;
   int instruction_pointer_;
-  enum class State { NEW, READY, RUNNING, WAITING, TERMINATED } state_;
+  ProcessState state_;
   int quantum_remaining_;
 };
