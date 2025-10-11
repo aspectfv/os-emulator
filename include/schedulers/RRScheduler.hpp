@@ -12,6 +12,7 @@ public:
   bool has_processes() const override;
   bool is_running() const override;
   void start() override;
+  void stop() override;
 
 private:
   std::priority_queue<QueuedProcess> ready_queue;

@@ -24,3 +24,5 @@ bool RRScheduler::has_processes() const { return !ready_queue.empty(); }
 bool RRScheduler::is_running() const { return is_running_; }
 
 void RRScheduler::start() { is_running_ = true; }
+
+void RRScheduler::stop() { is_running_ = false; }

@@ -121,7 +121,7 @@ void Emulator::scheduler_start() {
   scheduler_->start();
 }
 
-void Emulator::scheduler_stop() {}
+void Emulator::scheduler_stop() { scheduler_->stop(); }
 
 void Emulator::report_util() {}
 

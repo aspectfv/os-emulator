@@ -20,3 +20,5 @@ bool FCFSScheduler::has_processes() const { return !ready_queue.empty(); }
 bool FCFSScheduler::is_running() const { return is_running_; }
 
 void FCFSScheduler::start() { is_running_ = true; }
+
+void FCFSScheduler::stop() { is_running_ = false; }
