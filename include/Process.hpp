@@ -12,4 +12,5 @@ private:
   std::vector<IInstruction> instructions_;
   int total_instructions_;
   int instruction_pointer_;
+  enum class State { NEW, READY, RUNNING, WAITING, TERMINATED } state_;
 };

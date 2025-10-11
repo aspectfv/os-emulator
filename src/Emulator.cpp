@@ -23,6 +23,7 @@ bool Emulator::process_input(const std::string &input) {
 
 void Emulator::cycle() {
   while (is_initialized_) {
+    // sleep to prevent process from terminating too fast
     std::this_thread::sleep_for(std::chrono::milliseconds(300));
     cpu_cycles_++;
     std::cout << "Cycle: " << cpu_cycles_ << std::endl;
