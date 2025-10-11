@@ -6,6 +6,8 @@
 
 class Process {
 public:
+  void execute_current_instruction();
+
 private:
   int id_;
   std::string name_;

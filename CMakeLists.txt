@@ -22,6 +22,8 @@ add_executable(OSEmulator
   src/Config.cpp
   src/Emulator.cpp
   src/Process.cpp
+  src/CommandParser.cpp
+  src/CPUCore.cpp
 )
 
 target_include_directories(OSEmulator PRIVATE include)
