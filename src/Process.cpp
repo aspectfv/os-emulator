@@ -25,6 +25,8 @@ void Process::set_instructions(
   instruction_pointer_ = 0;
 }
 
+void Process::set_state(ProcessState state) { state_ = state; }
+
 void Process::set_quantum_remaining(int quantum_cycles) {
   quantum_remaining_ = quantum_cycles;
 }
