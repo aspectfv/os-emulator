@@ -19,16 +19,27 @@ private:
   CommandParser parser_;
   Config &config_ = Config::instance();
   bool is_initialized_ = false;
+
+  // process management
   std::unordered_map<std::string, std::unique_ptr<Process>> processes_;
+  std::vector<Process *> terminated_processes_;
+
   std::jthread cycle_thread_;
   int cpu_cycles_ = 0;
 
   std::vector<CPUCore> cores_;
 
   std::unique_ptr<IScheduler> scheduler_;
+  int process_count_ = 0;
+
+  // cycle mutex
+  std::mutex mtx_;
+  std::condition_variable cv_;
+  bool cycle_finished_ = false;
 
   // cpu cycle loop
   void cycle(std::stop_token st);
+  void generate_process();
 
   // command handlers
   void initialize();

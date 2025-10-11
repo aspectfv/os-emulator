@@ -47,34 +47,44 @@ void Emulator::cycle(std::stop_token st) {
       cores_[0].set_current_process(next_process);
     }
 
-    if (scheduler_->is_running()) {
-      int batch_freq = config_.get_batch_process_freq();
-
-      for (int i = 0; i < batch_freq; ++i) {
-        std::string process_name = "p" + std::to_string(cpu_cycles_);
-
-        auto process =
-            std::make_unique<Process>(cpu_cycles_, process_name, "00:00:00");
-
-        std::vector<std::unique_ptr<IInstruction>> instructions;
-
-        int num_instructions = rand() % 10 + 1; // Random between 1 and 10
-
-        for (int j = 0; j < num_instructions; ++j) {
-          instructions.push_back(std::make_unique<Print>(
-              process_name + ": Instruction " + std::to_string(j + 1)));
-        }
-
-        process->set_instructions(std::move(instructions));
-
-        processes_[process_name] = std::move(process);
-        scheduler_->add_process(processes_[process_name].get());
-      }
-    }
+    if (scheduler_->is_running())
+      generate_process();
 
     // sleep to prevent process from terminating too fast
     std::this_thread::sleep_for(std::chrono::milliseconds(300));
     cpu_cycles_++;
+
+    // cycle finished -> notify waiting thread
+    {
+      std::lock_guard<std::mutex> lock(mtx_);
+      cycle_finished_ = true;
+      cv_.notify_one();
+    }
+  }
+}
+
+void Emulator::generate_process() {
+  int batch_freq = config_.get_batch_process_freq();
+
+  for (int i = 0; i < batch_freq; ++i) {
+    std::string process_name = "p" + std::to_string(process_count_++);
+
+    auto process =
+        std::make_unique<Process>(cpu_cycles_, process_name, "00:00:00");
+
+    std::vector<std::unique_ptr<IInstruction>> instructions;
+
+    int num_instructions = rand() % 10 + 1; // Random between 1 and 10
+
+    for (int j = 0; j < num_instructions; ++j) {
+      instructions.push_back(std::make_unique<Print>(
+          process_name + ": Instruction " + std::to_string(j + 1)));
+    }
+
+    process->set_instructions(std::move(instructions));
+
+    processes_[process_name] = std::move(process);
+    scheduler_->add_process(processes_[process_name].get());
   }
 }
 
@@ -123,6 +133,15 @@ void Emulator::scheduler_start() {
 
 void Emulator::scheduler_stop() { scheduler_->stop(); }
 
-void Emulator::report_util() {}
+void Emulator::report_util() {
+  if (!is_initialized_)
+    throw std::runtime_error("Emulator is not initialized.");
+
+  {
+    std::unique_lock<std::mutex> lock(mtx_);
+    cv_.wait(lock, [this] { return cycle_finished_; });
+    cycle_finished_ = false;
+  }
+}
 
 void Emulator::process_smi() {}
