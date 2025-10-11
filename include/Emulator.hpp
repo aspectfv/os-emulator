@@ -19,7 +19,7 @@ private:
   Config &config_ = Config::instance();
   bool is_initialized_ = false;
   std::unordered_map<std::string, std::unique_ptr<Process>> processes_;
-  std::thread cycle_thread_;
+  std::jthread cycle_thread_;
   int cpu_cycles_ = 0;
 
   // single core for now

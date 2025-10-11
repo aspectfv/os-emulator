@@ -55,14 +55,11 @@ void Emulator::initialize() {
   }
 
   is_initialized_ = true;
-  cycle_thread_ = std::thread(&Emulator::cycle, this);
+  cycle_thread_ = std::jthread(&Emulator::cycle, this);
 }
 
 void Emulator::exit() {
   is_initialized_ = false;
-
-  if (cycle_thread_.joinable())
-    cycle_thread_.join();
 
   throw std::runtime_error("Exiting Emulator...");
 }
