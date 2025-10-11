@@ -6,3 +6,10 @@ void Process::execute_current_instruction() {
     instruction_pointer_++;
   }
 }
+
+void Process::set_instructions(
+    std::vector<std::unique_ptr<IInstruction>> &&instructions) {
+  instructions_ = std::move(instructions);
+  total_instructions_ = instructions_.size();
+  instruction_pointer_ = 0;
+}

@@ -32,8 +32,10 @@ bool Emulator::process_input(const std::string &input) {
   return true;
 }
 
-void Emulator::cycle() {
-  while (is_initialized_) {
+void Emulator::cycle(std::stop_token st) {
+  while (!st.stop_requested()) {
+    cores_[0].tick();
+
     // sleep to prevent process from terminating too fast
     std::this_thread::sleep_for(std::chrono::milliseconds(300));
     cpu_cycles_++;
@@ -55,14 +57,10 @@ void Emulator::initialize() {
   }
 
   is_initialized_ = true;
-  cycle_thread_ = std::jthread(&Emulator::cycle, this);
+  cycle_thread_ = std::jthread([this](std::stop_token st) { cycle(st); });
 }
 
-void Emulator::exit() {
-  is_initialized_ = false;
-
-  throw std::runtime_error("Exiting Emulator...");
-}
+void Emulator::exit() { throw std::runtime_error("Exiting Emulator..."); }
 
 void Emulator::screen(const std::string &args) {}
 

@@ -26,7 +26,7 @@ private:
   std::vector<CPUCore> cores_;
 
   // command handlers
-  void cycle();
+  void cycle(std::stop_token st);
   void initialize();
   void exit();
   void screen(const std::string &args);

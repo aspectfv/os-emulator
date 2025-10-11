@@ -7,6 +7,8 @@
 class Process {
 public:
   void execute_current_instruction();
+  void
+  set_instructions(std::vector<std::unique_ptr<IInstruction>> &&instructions);
 
 private:
   int id_;
