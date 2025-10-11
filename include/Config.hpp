@@ -2,6 +2,8 @@
 
 #include <string>
 
+// change types to uint32_t later when appropriate
+
 class Config {
 public:
   static Config &instance() {
