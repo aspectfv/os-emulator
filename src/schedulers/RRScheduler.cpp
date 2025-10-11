@@ -1,0 +1,22 @@
+#include "schedulers/RRScheduler.hpp"
+
+RRScheduler::RRScheduler(int quantum_cycles) : quantum_cycles(quantum_cycles) {}
+
+void RRScheduler::add_process(Process *process) {
+  ready_queue.push(QueuedProcess{process, false});
+}
+
+Process *RRScheduler::get_next_process() {
+  if (ready_queue.empty()) {
+    return nullptr;
+  }
+
+  QueuedProcess qp = ready_queue.top();
+  ready_queue.pop();
+
+  qp.process->set_quantum_remaining(quantum_cycles);
+
+  return qp.process;
+}
+
+bool RRScheduler::has_processes() const { return !ready_queue.empty(); }

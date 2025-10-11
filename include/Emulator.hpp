@@ -3,6 +3,7 @@
 #include "CommandParser.hpp"
 #include "Config.hpp"
 #include "Process.hpp"
+#include "schedulers/IScheduler.hpp"
 #include <memory>
 #include <string>
 #include <thread>
@@ -24,6 +25,8 @@ private:
 
   // single core for now
   std::vector<CPUCore> cores_;
+
+  std::unique_ptr<IScheduler> scheduler_;
 
   // command handlers
   void cycle(std::stop_token st);

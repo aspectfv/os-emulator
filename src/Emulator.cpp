@@ -34,7 +34,9 @@ bool Emulator::process_input(const std::string &input) {
 
 void Emulator::cycle(std::stop_token st) {
   while (!st.stop_requested()) {
-    cores_[0].tick();
+    if (!cores_[0].is_idle()) {
+      cores_[0].tick();
+    }
 
     // sleep to prevent process from terminating too fast
     std::this_thread::sleep_for(std::chrono::milliseconds(300));

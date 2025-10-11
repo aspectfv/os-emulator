@@ -13,3 +13,7 @@ void Process::set_instructions(
   total_instructions_ = instructions_.size();
   instruction_pointer_ = 0;
 }
+
+void Process::set_quantum_remaining(int quantum_cycles) {
+  quantum_remaining_ = quantum_cycles;
+}
