@@ -157,9 +157,8 @@ void Emulator::screen(const std::vector<std::string> &args) {
   if (arg == "-ls") {
     std::cout << "Processes:\n";
     for (const auto &pair : processes_) {
-      std::cout << "- " << pair.first << "\n";
+      std::cout << "- " << pair.first << std::endl;
     }
-    std::cout << std::flush;
     return;
   }
 

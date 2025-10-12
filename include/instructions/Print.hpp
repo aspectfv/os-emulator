@@ -5,7 +5,7 @@
 class Print : public IInstruction {
 public:
   Print(const std::string &msg);
-  void execute(Process *process, int cpu_core_id) override;
+  void execute(InstructionContext context) override;
   const std::string &get_message() const;
 
 private:
