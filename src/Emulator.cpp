@@ -1,4 +1,6 @@
 #include "Emulator.hpp"
+#include "Process.hpp"
+#include "Utils.hpp"
 #include "instructions/Print.hpp"
 #include "schedulers/FCFSSCheduler.hpp"
 #include "schedulers/RRScheduler.hpp"
@@ -87,9 +89,9 @@ void Emulator::generate_process() {
         config_.get_min_ins() +
         (rand() % (config_.get_max_ins() - config_.get_min_ins() + 1));
 
-    std::unique_ptr<Process> process =
-        std::make_unique<Process>(process_name, "00:00:00", num_instructions,
-                                  config_.get_quantum_cycles());
+    std::unique_ptr<Process> process = std::make_unique<Process>(
+        process_name, Utils::current_timestamp(), num_instructions,
+        config_.get_quantum_cycles());
 
     std::vector<std::unique_ptr<IInstruction>> instructions;
 
@@ -175,9 +177,9 @@ void Emulator::screen(const std::vector<std::string> &args) {
           config_.get_min_ins() +
           (rand() % (config_.get_max_ins() - config_.get_min_ins() + 1));
 
-      std::unique_ptr<Process> new_process =
-          std::make_unique<Process>(process_name, "00:00:00", num_instructions,
-                                    config_.get_quantum_cycles());
+      std::unique_ptr<Process> new_process = std::make_unique<Process>(
+          process_name, Utils::current_timestamp(), num_instructions,
+          config_.get_quantum_cycles());
 
       std::vector<std::unique_ptr<IInstruction>> instructions;
 
@@ -258,7 +260,7 @@ void Emulator::process_smi() {
   std::cout << "ID: " << current_process_->get_id() << std::endl;
   std::cout << "Logs: " << std::endl;
 
-  for (const auto &log : current_process_->get_logs()) {
+  for (const ProcessLog &log : current_process_->get_logs()) {
     std::cout << "(" << log.timestamp << ") "
               << "Core " << log.core_id << ": " << "\"" << log.message << "\""
               << std::endl;

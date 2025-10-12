@@ -27,6 +27,7 @@ add_executable(OSEmulator
   src/schedulers/FCFSScheduler.cpp
   src/schedulers/RRScheduler.cpp
   src/instructions/Print.cpp
+  src/Utils.cpp
 )
 
 target_include_directories(OSEmulator PRIVATE include)
