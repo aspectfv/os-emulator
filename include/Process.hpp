@@ -2,6 +2,7 @@
 #include "instructions/IInstruction.hpp"
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 struct ProcessLog {
@@ -40,6 +41,7 @@ private:
   std::string name_;
   std::string created_at_;
   std::vector<std::unique_ptr<IInstruction>> instructions_;
+  std::unordered_map<std::string, int> symbol_table_;
   int total_instructions_;
   int instruction_pointer_;
   ProcessState state_;
