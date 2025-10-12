@@ -1,22 +1,37 @@
 #include "Process.hpp"
 
-Process::Process(int id, const std::string &name, const std::string &created_at)
-    : id_(id), name_(name), created_at_(created_at), instruction_pointer_(0),
-      total_instructions_(0), state_(ProcessState::NEW), quantum_remaining_(0) {
-}
+// auto inc process id
+int Process::next_id_ = 0;
 
-void Process::execute_current_instruction() {
+Process::Process(const std::string &name, const std::string &created_at,
+                 int total_instructions, int quantum_cycles)
+    : id_(next_id_++), name_(name), created_at_(created_at),
+      total_instructions_(total_instructions), instruction_pointer_(0),
+      state_(ProcessState::NEW), quantum_remaining_(quantum_cycles) {}
+
+void Process::execute_current_instruction(int cpu_core_id) {
   if (instruction_pointer_ < total_instructions_) {
-    instructions_[instruction_pointer_]->execute();
-    instruction_pointer_++;
+    instructions_[instruction_pointer_]->execute(this, cpu_core_id);
   }
 }
 
-bool Process::is_finished() const {
+const int Process::get_id() const { return id_; }
+
+const std::string Process::get_name() const { return name_; }
+
+const int Process::get_total_instructions() { return total_instructions_; }
+
+const int Process::get_instruction_pointer() { return instruction_pointer_; }
+
+const bool Process::is_finished() const {
   return instruction_pointer_ >= total_instructions_;
 }
 
-int Process::is_quantum_expired() const { return quantum_remaining_ <= 0; }
+const int Process::is_quantum_expired() const {
+  return quantum_remaining_ <= 0;
+}
+
+void Process::increment_instruction_pointer() { instruction_pointer_++; }
 
 void Process::set_instructions(
     std::vector<std::unique_ptr<IInstruction>> &&instructions) {
@@ -32,3 +47,8 @@ void Process::set_quantum_remaining(int quantum_cycles) {
 }
 
 void Process::decrement_quantum_remaining() { quantum_remaining_--; }
+
+void Process::add_log(const std::string &timestamp, int core_id,
+                      const std::string &message) {
+  logs_.push_back({timestamp, core_id, message});
+}

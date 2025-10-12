@@ -4,21 +4,38 @@
 #include <string>
 #include <vector>
 
+struct ProcessLog {
+  std::string timestamp;
+  int core_id;
+  std::string message;
+};
+
 class Process {
 public:
   enum class ProcessState { NEW, READY, RUNNING, WAITING, TERMINATED };
 
-  Process(int id, const std::string &name, const std::string &created_at);
-  void execute_current_instruction();
-  bool is_finished() const;
-  int is_quantum_expired() const;
+  Process(const std::string &name, const std::string &created_at,
+          int total_instructions, int quantum_cycles);
+  void execute_current_instruction(int cpu_core_id);
+  const int get_id() const;
+  const std::string get_name() const;
+  const int get_total_instructions();
+  const int get_instruction_pointer();
+  const bool is_finished() const;
+  const int is_quantum_expired() const;
+  const std::vector<ProcessLog> &get_logs() const { return logs_; }
+
+  void increment_instruction_pointer();
   void
   set_instructions(std::vector<std::unique_ptr<IInstruction>> &&instructions);
   void set_state(ProcessState state);
   void set_quantum_remaining(int quantum_cycles);
   void decrement_quantum_remaining();
+  void add_log(const std::string &timestamp, int core_id,
+               const std::string &message);
 
 private:
+  static int next_id_;
   int id_;
   std::string name_;
   std::string created_at_;
@@ -27,4 +44,5 @@ private:
   int instruction_pointer_;
   ProcessState state_;
   int quantum_remaining_;
+  std::vector<ProcessLog> logs_;
 };

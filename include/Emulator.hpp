@@ -23,6 +23,7 @@ private:
   // process management
   std::unordered_map<std::string, std::unique_ptr<Process>> processes_;
   std::vector<Process *> terminated_processes_;
+  Process *current_process_ = nullptr;
 
   std::jthread cycle_thread_;
   int cpu_cycles_ = 0;
@@ -44,7 +45,7 @@ private:
   // command handlers
   void initialize();
   void exit();
-  void screen(const std::string &args);
+  void screen(const std::vector<std::string> &args);
   void scheduler_start();
   void scheduler_stop();
   void report_util();

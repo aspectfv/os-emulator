@@ -4,11 +4,13 @@ CPUCore::CPUCore(int id, const std::string scheduler, const int delay_per_exec)
     : id_(id), scheduler_(scheduler), delay_per_exec_(delay_per_exec) {}
 
 void CPUCore::tick() {
-  current_process_->execute_current_instruction();
+  current_process_->execute_current_instruction(id_);
+  current_process_->increment_instruction_pointer();
 
   if (current_process_->is_finished()) {
     current_process_->set_state(Process::ProcessState::TERMINATED);
     current_process_ = nullptr;
+    return;
   }
 
   if (scheduler_ == "rr") {
@@ -21,7 +23,7 @@ void CPUCore::tick() {
   }
 }
 
-bool CPUCore::is_idle() { return current_process_ == nullptr; }
+const bool CPUCore::is_idle() const { return current_process_ == nullptr; }
 
 const Process *CPUCore::get_current_process() const { return current_process_; }
 

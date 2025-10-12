@@ -5,7 +5,7 @@
 
 class CommandParser {
 public:
-  using Command = std::function<void(const std::string &args)>;
+  using Command = std::function<void(const std::vector<std::string> &&args)>;
   void registerCommand(const std::string &name, Command command);
   void executeCommand(const std::string &input);
 

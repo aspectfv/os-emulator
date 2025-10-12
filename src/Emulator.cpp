@@ -2,25 +2,39 @@
 #include "instructions/Print.hpp"
 #include "schedulers/FCFSSCheduler.hpp"
 #include "schedulers/RRScheduler.hpp"
-#include <cstdlib>
+#include <chrono>
+#include <fstream>
 #include <iostream>
 #include <stdexcept>
 
 Emulator::Emulator() {
-  parser_.registerCommand("exit", [this](const std::string &args) { exit(); });
-  parser_.registerCommand("initialize",
-                          [this](const std::string &args) { initialize(); });
-  parser_.registerCommand("screen",
-                          [this](const std::string &args) { screen(args); });
-  parser_.registerCommand("scheduler-start", [this](const std::string &args) {
-    scheduler_start();
-  });
   parser_.registerCommand(
-      "scheduler-stop", [this](const std::string &args) { scheduler_stop(); });
-  parser_.registerCommand("report-util",
-                          [this](const std::string &args) { report_util(); });
-  parser_.registerCommand("process-smi",
-                          [this](const std::string &args) { process_smi(); });
+      "initialize",
+      [this](const std::vector<std::string> &args) { this->initialize(); });
+
+  parser_.registerCommand(
+      "exit", [this](const std::vector<std::string> &args) { this->exit(); });
+
+  parser_.registerCommand(
+      "screen",
+      [this](const std::vector<std::string> &args) { this->screen(args); });
+
+  parser_.registerCommand("scheduler-start",
+                          [this](const std::vector<std::string> &args) {
+                            this->scheduler_start();
+                          });
+
+  parser_.registerCommand(
+      "scheduler-stop",
+      [this](const std::vector<std::string> &args) { this->scheduler_stop(); });
+
+  parser_.registerCommand(
+      "report-util",
+      [this](const std::vector<std::string> &args) { this->report_util(); });
+
+  parser_.registerCommand(
+      "process-smi",
+      [this](const std::vector<std::string> &args) { this->process_smi(); });
 }
 
 bool Emulator::process_input(const std::string &input) {
@@ -69,12 +83,15 @@ void Emulator::generate_process() {
   for (int i = 0; i < batch_freq; ++i) {
     std::string process_name = "p" + std::to_string(process_count_++);
 
-    auto process =
-        std::make_unique<Process>(cpu_cycles_, process_name, "00:00:00");
+    int num_instructions =
+        config_.get_min_ins() +
+        (rand() % (config_.get_max_ins() - config_.get_min_ins() + 1));
+
+    std::unique_ptr<Process> process =
+        std::make_unique<Process>(process_name, "00:00:00", num_instructions,
+                                  config_.get_quantum_cycles());
 
     std::vector<std::unique_ptr<IInstruction>> instructions;
-
-    int num_instructions = rand() % 10 + 1; // Random between 1 and 10
 
     for (int j = 0; j < num_instructions; ++j) {
       instructions.push_back(std::make_unique<Print>(
@@ -117,9 +134,75 @@ void Emulator::initialize() {
   cycle_thread_ = std::jthread([this](std::stop_token st) { cycle(st); });
 }
 
-void Emulator::exit() { throw std::runtime_error("Exiting Emulator..."); }
+void Emulator::exit() {
+  if (current_process_) {
+    std::cout << "Exiting screen for process: " << current_process_->get_name()
+              << std::endl;
+    current_process_ = nullptr;
+    return;
+  }
 
-void Emulator::screen(const std::string &args) {}
+  throw std::runtime_error("Exiting Emulator...");
+}
+
+void Emulator::screen(const std::vector<std::string> &args) {
+  if (!is_initialized_)
+    throw std::runtime_error("Emulator is not initialized.");
+
+  if (args.empty())
+    throw std::runtime_error("No screen command provided.");
+
+  std::string arg = args[0];
+
+  if (arg == "-ls") {
+    std::cout << "Processes:\n";
+    for (const auto &pair : processes_) {
+      std::cout << "- " << pair.first << "\n";
+    }
+    std::cout << std::flush;
+    return;
+  }
+
+  if (arg == "-s") {
+    if (args.size() < 2)
+      throw std::runtime_error("No process name provided for -s command.");
+
+    std::string process_name = args[1];
+
+    auto [it, inserted] = processes_.try_emplace(process_name, nullptr);
+
+    if (inserted) {
+      int num_instructions =
+          config_.get_min_ins() +
+          (rand() % (config_.get_max_ins() - config_.get_min_ins() + 1));
+
+      std::unique_ptr<Process> new_process =
+          std::make_unique<Process>(process_name, "00:00:00", num_instructions,
+                                    config_.get_quantum_cycles());
+
+      std::vector<std::unique_ptr<IInstruction>> instructions;
+
+      for (int j = 0; j < num_instructions; ++j) {
+        instructions.push_back(std::make_unique<Print>(
+            process_name + ": Instruction " + std::to_string(j + 1)));
+      }
+
+      new_process->set_instructions(std::move(instructions));
+
+      it->second = std::move(new_process);
+    }
+
+    Process *process = it->second.get();
+
+    process->set_state(Process::ProcessState::READY);
+
+    current_process_ = processes_[process_name].get();
+
+    scheduler_->add_process(current_process_);
+
+    std::cout << "\033[2J\033[1;1H";
+  }
+}
 
 void Emulator::scheduler_start() {
   if (!is_initialized_)
@@ -131,7 +214,12 @@ void Emulator::scheduler_start() {
   scheduler_->start();
 }
 
-void Emulator::scheduler_stop() { scheduler_->stop(); }
+void Emulator::scheduler_stop() {
+  if (!is_initialized_)
+    throw std::runtime_error("Emulator is not initialized.");
+
+  scheduler_->stop();
+}
 
 void Emulator::report_util() {
   if (!is_initialized_)
@@ -142,6 +230,48 @@ void Emulator::report_util() {
     cv_.wait(lock, [this] { return cycle_finished_; });
     cycle_finished_ = false;
   }
+
+  std::ofstream report_file("csopesy-log.txt");
+
+  if (!report_file.is_open())
+    throw std::runtime_error("Failed to open report file.");
+
+  int busy_cores = 0;
+
+  for (const auto &core : cores_) {
+    if (!core.is_idle())
+      busy_cores++;
+  }
+
+  int cpu_utilization = cores_.empty() ? 0 : (busy_cores * 100) / cores_.size();
+
+  report_file.close();
 }
 
-void Emulator::process_smi() {}
+void Emulator::process_smi() {
+  if (!is_initialized_)
+    throw std::runtime_error("Emulator is not initialized.");
+
+  if (!current_process_)
+    throw std::runtime_error("No current process to handle SMI.");
+
+  std::cout << "Process Name: " << current_process_->get_name() << std::endl;
+  std::cout << "ID: " << current_process_->get_id() << std::endl;
+  std::cout << "Logs: " << std::endl;
+
+  for (const auto &log : current_process_->get_logs()) {
+    std::cout << "(" << log.timestamp << ") "
+              << "Core " << log.core_id << ": " << "\"" << log.message << "\""
+              << std::endl;
+  }
+
+  if (current_process_->is_finished()) {
+    std::cout << "Finished!" << std::endl;
+  } else {
+    std::cout << "Current instruction line: "
+              << current_process_->get_instruction_pointer() << std::endl;
+
+    std::cout << "Lines of code: " << current_process_->get_total_instructions()
+              << std::endl;
+  }
+}
