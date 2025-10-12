@@ -54,17 +54,18 @@ bool Emulator::process_input(const std::string &input) {
 
 void Emulator::cycle(std::stop_token st) {
   while (!st.stop_requested()) {
-    if (!cores_[0].is_idle()) {
-      cores_[0].tick();
-    }
+    // assign processes to idle cores
+    assign_processes();
 
-    if (scheduler_->has_processes() && cores_[0].is_idle()) {
-      auto next_process = scheduler_->get_next_process();
-      cores_[0].set_current_process(next_process);
-    }
+    // tick all cores and collect returned processes
+    std::vector<Process *> returned_processes = tick_cores();
 
+    // generate new processes if scheduler is running
     if (scheduler_->is_running())
-      generate_process();
+      generate_processes();
+
+    // handle returned processes
+    handle_returned_processes(returned_processes);
 
     // sleep to prevent process from terminating too fast
     std::this_thread::sleep_for(std::chrono::milliseconds(300));
@@ -79,9 +80,40 @@ void Emulator::cycle(std::stop_token st) {
   }
 }
 
-void Emulator::generate_process() {
+void Emulator::assign_processes() {
+  for (auto &core : cores_) {
+    if (core.is_idle() && scheduler_->has_processes()) {
+      Process *next_process = scheduler_->get_next_process();
+      core.set_current_process(next_process);
+    }
+  }
+}
+
+std::vector<Process *> Emulator::tick_cores() {
+  std::vector<Process *> returned_processes(cores_.size());
+
+  // tick all cores in parallel
+  // auto join after scope ends
+  {
+    std::vector<std::jthread> core_threads;
+    core_threads.reserve(cores_.size());
+
+    for (size_t i = 0; i < cores_.size(); ++i) {
+      if (!cores_[i].is_idle()) {
+        core_threads.emplace_back([this, i, &returned_processes]() {
+          returned_processes[i] = cores_[i].tick();
+        });
+      }
+    }
+  }
+
+  return returned_processes;
+}
+
+void Emulator::generate_processes() {
   int batch_freq = config_.get_batch_process_freq();
 
+  // generate batch_freq amount of processes
   for (int i = 0; i < batch_freq; ++i) {
     std::string process_name = "p" + std::to_string(process_count_++);
 
@@ -107,6 +139,36 @@ void Emulator::generate_process() {
   }
 }
 
+void Emulator::handle_returned_processes(
+    const std::vector<Process *> &returned_processes) {
+
+  for (size_t i = 0; i < returned_processes.size(); ++i) {
+    Process *returned_process = returned_processes[i];
+
+    if (!returned_process)
+      continue;
+
+    switch (returned_process->get_state()) {
+      case Process::ProcessState::TERMINATED:
+        processes_.erase(returned_process->get_name());
+        terminated_processes_.push_back(returned_process);
+        break;
+      case Process::ProcessState::READY: {
+        scheduler_->add_process(returned_process, true);
+
+        if (scheduler_->has_processes()) {
+          Process *next_process = scheduler_->get_next_process();
+          cores_[i].set_current_process(next_process);
+        }
+
+        break;
+      }
+      default:
+        break;
+    }
+  }
+}
+
 void Emulator::initialize() {
   if (is_initialized_)
     throw std::runtime_error("Emulator is already initialized.");
@@ -121,15 +183,15 @@ void Emulator::initialize() {
                         config_.get_delay_per_exec());
   }
 
-  std::string scheduler_type = config_.get_scheduler();
+  std::string scheduler = config_.get_scheduler();
 
-  if (scheduler_type == "fcfs") {
+  if (scheduler == "fcfs") {
     scheduler_ = std::make_unique<FCFSScheduler>();
-  } else if (scheduler_type == "rr") {
+  } else if (scheduler == "rr") {
     int quantum_cycles = config_.get_quantum_cycles();
     scheduler_ = std::make_unique<RRScheduler>(quantum_cycles);
   } else {
-    throw std::runtime_error("Unknown scheduler type: " + scheduler_type);
+    throw std::runtime_error("Unknown scheduler type: " + scheduler);
   }
 
   is_initialized_ = true;

@@ -6,6 +6,10 @@ void RRScheduler::add_process(Process *process) {
   ready_queue.push(QueuedProcess{process, false});
 }
 
+void RRScheduler::add_process(Process *process, bool is_preempted) {
+  ready_queue.push(QueuedProcess{process, is_preempted});
+}
+
 Process *RRScheduler::get_next_process() {
   if (ready_queue.empty()) {
     return nullptr;

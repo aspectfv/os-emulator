@@ -4,7 +4,7 @@
 class CPUCore {
 public:
   CPUCore(int id, const std::string scheduler, const int delay_per_exec);
-  void tick();
+  Process *tick();
   const bool is_idle() const;
   const Process *get_current_process() const;
   void set_current_process(Process *process);

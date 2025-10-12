@@ -40,7 +40,13 @@ private:
 
   // cpu cycle loop
   void cycle(std::stop_token st);
-  void generate_process();
+
+  // cycle helpers
+  void assign_processes();
+  std::vector<Process *> tick_cores();
+  void generate_processes();
+  void
+  handle_returned_processes(const std::vector<Process *> &returned_processes);
 
   // command handlers
   void initialize();

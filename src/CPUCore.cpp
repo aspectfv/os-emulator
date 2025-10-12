@@ -1,10 +1,11 @@
 #include "CPUCore.hpp"
+#include "Process.hpp"
 #include <chrono>
 
 CPUCore::CPUCore(int id, const std::string scheduler, const int delay_per_exec)
     : id_(id), scheduler_(scheduler), delay_per_exec_(delay_per_exec) {}
 
-void CPUCore::tick() {
+Process *CPUCore::tick() {
   busy_wait(delay_per_exec_);
 
   current_process_->execute_current_instruction(id_);
@@ -12,8 +13,11 @@ void CPUCore::tick() {
 
   if (current_process_->is_finished()) {
     current_process_->set_state(Process::ProcessState::TERMINATED);
+
+    Process *finished_process = current_process_;
     current_process_ = nullptr;
-    return;
+
+    return finished_process;
   }
 
   if (scheduler_ == "rr") {
@@ -21,9 +25,15 @@ void CPUCore::tick() {
 
     if (current_process_->is_quantum_expired()) {
       current_process_->set_state(Process::ProcessState::READY);
+
+      Process *preempted_process = current_process_;
       current_process_ = nullptr;
+
+      return preempted_process;
     }
   }
+
+  return nullptr;
 }
 
 const bool CPUCore::is_idle() const { return current_process_ == nullptr; }
@@ -32,6 +42,9 @@ const Process *CPUCore::get_current_process() const { return current_process_; }
 
 void CPUCore::set_current_process(Process *process) {
   current_process_ = process;
+
+  if (process)
+    current_process_->set_state(Process::ProcessState::RUNNING);
 }
 
 void CPUCore::busy_wait(int cycles) {

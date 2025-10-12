@@ -22,6 +22,7 @@ public:
   const std::string get_name() const;
   const int get_total_instructions();
   const int get_instruction_pointer();
+  const ProcessState get_state() const;
   const bool is_finished() const;
   const int is_quantum_expired() const;
   const std::vector<ProcessLog> &get_logs() const { return logs_; }

@@ -34,6 +34,8 @@ const int Process::get_total_instructions() { return total_instructions_; }
 
 const int Process::get_instruction_pointer() { return instruction_pointer_; }
 
+const Process::ProcessState Process::get_state() const { return state_; }
+
 const bool Process::is_finished() const {
   return instruction_pointer_ >= total_instructions_;
 }
