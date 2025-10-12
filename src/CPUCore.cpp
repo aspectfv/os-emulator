@@ -1,9 +1,12 @@
 #include "CPUCore.hpp"
+#include <chrono>
 
 CPUCore::CPUCore(int id, const std::string scheduler, const int delay_per_exec)
     : id_(id), scheduler_(scheduler), delay_per_exec_(delay_per_exec) {}
 
 void CPUCore::tick() {
+  busy_wait(delay_per_exec_);
+
   current_process_->execute_current_instruction(id_);
   current_process_->increment_instruction_pointer();
 
@@ -29,4 +32,16 @@ const Process *CPUCore::get_current_process() const { return current_process_; }
 
 void CPUCore::set_current_process(Process *process) {
   current_process_ = process;
+}
+
+void CPUCore::busy_wait(int cycles) {
+  if (cycles <= 0)
+    return;
+
+  auto start_time = std::chrono::high_resolution_clock::now();
+  auto end_time =
+      start_time + std::chrono::microseconds(cycles); // 1 cycle = 1 microsecond
+
+  while (std::chrono::high_resolution_clock::now() < end_time)
+    ;
 }

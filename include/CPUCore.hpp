@@ -14,4 +14,6 @@ private:
   Process *current_process_ = nullptr;
   const std::string scheduler_ = "fcfs";
   const int delay_per_exec_;
+
+  void busy_wait(int cycles);
 };
