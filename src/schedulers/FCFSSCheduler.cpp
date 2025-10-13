@@ -1,4 +1,4 @@
-#include "schedulers/FCFSSCheduler.hpp"
+#include "schedulers/FCFSScheduler.hpp"
 
 void FCFSScheduler::add_process(Process *process) {
   ready_queue.push(QueuedProcess{process, false});
