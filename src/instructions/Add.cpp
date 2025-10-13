@@ -15,6 +15,7 @@ void Add::execute(InstructionContext context) {
       value2 = context.get_variable.value()(var2.first);
     } else {
       value2 = std::get<uint16_t>(var2_);
+      context.add_variable.value()(std::make_pair(var1_.first, value2));
     }
 
     if (std::holds_alternative<std::pair<std::string, uint16_t>>(var3_)) {
@@ -22,6 +23,7 @@ void Add::execute(InstructionContext context) {
       value3 = context.get_variable.value()(var3.first);
     } else {
       value3 = std::get<uint16_t>(var3_);
+      context.add_variable.value()(std::make_pair(var1_.first, value3));
     }
 
     uint16_t result = value2 + value3;
