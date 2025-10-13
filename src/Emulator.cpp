@@ -220,6 +220,11 @@ void Emulator::screen(const std::vector<std::string> &args) {
     list_screens();
     return;
   }
+
+  if (arg == "-r") {
+    resume_screen(const_cast<std::vector<std::string> &>(args));
+    return;
+  }
 }
 
 void Emulator::start_screen(std::vector<std::string> &args) {
