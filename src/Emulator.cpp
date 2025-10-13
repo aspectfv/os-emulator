@@ -2,8 +2,7 @@
 #include "Process.hpp"
 #include "Utils.hpp"
 #include "instructions/Print.hpp"
-#include "schedulers/FCFSSCheduler.hpp"
-#include "schedulers/RRScheduler.hpp"
+#include "schedulers/SchedulerFactory.hpp"
 #include <chrono>
 #include <fstream>
 #include <iostream>
@@ -184,17 +183,11 @@ void Emulator::initialize() {
   }
 
   std::string scheduler = config_.get_scheduler();
-
-  if (scheduler == "fcfs") {
-    scheduler_ = std::make_unique<FCFSScheduler>();
-  } else if (scheduler == "rr") {
-    int quantum_cycles = config_.get_quantum_cycles();
-    scheduler_ = std::make_unique<RRScheduler>(quantum_cycles);
-  } else {
-    throw std::runtime_error("Unknown scheduler type: " + scheduler);
-  }
+  scheduler_ = SchedulerFactory::createScheduler(scheduler,
+                                                 config_.get_quantum_cycles());
 
   is_initialized_ = true;
+
   cycle_thread_ = std::jthread([this](std::stop_token st) { cycle(st); });
 }
 
