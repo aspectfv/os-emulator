@@ -1,5 +1,4 @@
 #include "Process.hpp"
-#include "Utils.hpp"
 
 // auto inc process id
 int Process::next_id_ = 0;
@@ -13,11 +12,6 @@ Process::Process(const std::string &name, const std::string &created_at,
 void Process::execute_current_instruction(int cpu_core_id) {
   if (instruction_pointer_ < total_instructions_) {
     instructions_[instruction_pointer_]->execute(InstructionContext{
-        .timestamp = Utils::current_timestamp(),
-        .variable_exists =
-            [this](const std::string &var) {
-              return symbol_table_.find(var) != symbol_table_.end();
-            },
         .add_log =
             [this, cpu_core_id](const std::string &message) {
               this->add_log(this->created_at_, cpu_core_id, message);

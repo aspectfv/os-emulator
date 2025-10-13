@@ -2,6 +2,8 @@
 
 Print::Print(const std::string &msg) : message_(msg) {}
 
-void Print::execute(InstructionContext context) { context.add_log(message_); }
-
-const std::string &Print::get_message() const { return message_; }
+void Print::execute(InstructionContext context) {
+  if (context.add_log) {
+    context.add_log.value()(message_);
+  }
+}
