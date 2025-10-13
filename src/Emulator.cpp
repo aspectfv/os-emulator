@@ -362,7 +362,7 @@ void Emulator::log_cpu_util_report(std::ostream &output_stream) {
 
   auto format_process_log = [](const Process *process, int core_id) {
     std::string core_info =
-        core_id <= 0 ? "Finished" : "Core: " + std::to_string(core_id);
+        core_id < 0 ? "Finished" : "Core: " + std::to_string(core_id);
     return process->get_name() + "  " + "(" + process->get_created_at() +
            ")  " + core_info + "  " +
            std::to_string(process->get_instruction_pointer()) + "/" +
