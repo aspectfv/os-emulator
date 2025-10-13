@@ -51,10 +51,20 @@ private:
   // command handlers
   void initialize();
   void exit();
+
   void screen(const std::vector<std::string> &args);
+
+  // screen helpers
+  void start_screen(std::vector<std::string> &args);
+  void list_screens();
+  void resume_screen(std::vector<std::string> &args);
+
   void scheduler_start();
   void scheduler_stop();
   void report_util();
+
+  // report helper
+  void log_cpu_util_report(std::ostream &output_stream);
 
   // screen command handlers
   void process_smi();

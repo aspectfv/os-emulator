@@ -211,53 +211,79 @@ void Emulator::screen(const std::vector<std::string> &args) {
 
   std::string arg = args[0];
 
-  if (arg == "-ls") {
-    std::cout << "Processes:\n";
-    for (const auto &pair : processes_) {
-      std::cout << "- " << pair.first << std::endl;
-    }
+  if (arg == "-s") {
+    start_screen(const_cast<std::vector<std::string> &>(args));
     return;
   }
 
-  if (arg == "-s") {
-    if (args.size() < 2)
-      throw std::runtime_error("No process name provided for -s command.");
+  if (arg == "-ls") {
+    list_screens();
+    return;
+  }
+}
 
-    std::string process_name = args[1];
+void Emulator::start_screen(std::vector<std::string> &args) {
+  if (args.size() < 2)
+    throw std::runtime_error("No process name provided for -s command.");
 
-    auto [it, inserted] = processes_.try_emplace(process_name, nullptr);
+  std::string process_name = args[1];
 
-    if (inserted) {
-      int num_instructions =
-          config_.get_min_ins() +
-          (rand() % (config_.get_max_ins() - config_.get_min_ins() + 1));
+  auto [it, inserted] = processes_.try_emplace(process_name, nullptr);
 
-      std::unique_ptr<Process> new_process = std::make_unique<Process>(
-          process_name, Utils::current_timestamp(), num_instructions,
-          config_.get_quantum_cycles());
+  if (inserted) {
+    int num_instructions =
+        config_.get_min_ins() +
+        (rand() % (config_.get_max_ins() - config_.get_min_ins() + 1));
 
-      std::vector<std::unique_ptr<IInstruction>> instructions;
+    std::unique_ptr<Process> new_process = std::make_unique<Process>(
+        process_name, Utils::current_timestamp(), num_instructions,
+        config_.get_quantum_cycles());
 
-      for (int j = 0; j < num_instructions; ++j) {
-        instructions.push_back(std::make_unique<Print>(
-            process_name + ": Instruction " + std::to_string(j + 1)));
-      }
+    std::vector<std::unique_ptr<IInstruction>> instructions;
 
-      new_process->set_instructions(std::move(instructions));
-
-      it->second = std::move(new_process);
+    for (int j = 0; j < num_instructions; ++j) {
+      instructions.push_back(std::make_unique<Print>(
+          process_name + ": Instruction " + std::to_string(j + 1)));
     }
 
-    Process *process = it->second.get();
+    new_process->set_instructions(std::move(instructions));
 
-    process->set_state(Process::ProcessState::READY);
-
-    current_process_ = processes_[process_name].get();
-
-    scheduler_->add_process(current_process_);
-
-    std::cout << "\033[2J\033[1;1H";
+    it->second = std::move(new_process);
   }
+
+  Process *process = it->second.get();
+
+  process->set_state(Process::ProcessState::READY);
+
+  current_process_ = processes_[process_name].get();
+
+  scheduler_->add_process(current_process_);
+
+  std::cout << "\033[2J\033[1;1H";
+}
+
+void Emulator::list_screens() {
+  // does the same as report_util but doesnt log to a file
+  log_cpu_util_report(std::cout);
+}
+
+void Emulator::resume_screen(std::vector<std::string> &args) {
+  if (args.size() < 2)
+    throw std::runtime_error("No process name provided for -r command.");
+
+  std::string process_name = args[1];
+
+  auto it = processes_.find(process_name);
+
+  if (it == processes_.end()) {
+    std::string error_msg = "Process " + process_name + " not found.";
+    throw std::runtime_error(error_msg);
+    return;
+  }
+
+  current_process_ = it->second.get();
+
+  std::cout << "\033[2J\033[1;1H";
 }
 
 void Emulator::scheduler_start() {
@@ -268,6 +294,8 @@ void Emulator::scheduler_start() {
     throw std::runtime_error("Scheduler is already running.");
 
   scheduler_->start();
+
+  std::cout << "Scheduler started." << std::endl;
 }
 
 void Emulator::scheduler_stop() {
@@ -275,6 +303,8 @@ void Emulator::scheduler_stop() {
     throw std::runtime_error("Emulator is not initialized.");
 
   scheduler_->stop();
+
+  std::cout << "Scheduler stopped." << std::endl;
 }
 
 void Emulator::report_util() {
@@ -299,9 +329,66 @@ void Emulator::report_util() {
       busy_cores++;
   }
 
-  int cpu_utilization = cores_.empty() ? 0 : (busy_cores * 100) / cores_.size();
+  log_cpu_util_report(std::cout);
+  log_cpu_util_report(report_file);
 
   report_file.close();
+}
+
+void Emulator::log_cpu_util_report(std::ostream &output_stream) {
+  int busy_cores = 0;
+
+  for (const auto &core : cores_) {
+    if (!core.is_idle())
+      busy_cores++;
+  }
+
+  int cpu_utilization = cores_.empty() ? 0 : (busy_cores * 100) / cores_.size();
+
+  output_stream << "CPU utilization: " << cpu_utilization << "\n";
+  output_stream << "Cores used: " << busy_cores << "\n";
+  output_stream << "Cores available: " << cores_.size() << "\n\n";
+  output_stream << "----------------------------------------\n";
+  output_stream << "Running processes:\n";
+
+  bool any_running = false;
+
+  auto format_process_log = [](const Process *process, int core_id) {
+    std::string core_info =
+        core_id <= 0 ? "Finished" : "Core: " + std::to_string(core_id);
+    return process->get_name() + "  " + "(" + process->get_created_at() +
+           ")  " + core_info + "  " +
+           std::to_string(process->get_instruction_pointer()) + "/" +
+           std::to_string(process->get_total_instructions()) + "\n";
+  };
+
+  for (size_t i = 0; i < cores_.size(); ++i) {
+    if (!cores_[i].is_idle()) {
+      const Process *running_process = cores_[i].get_current_process();
+      if (!running_process)
+        continue;
+
+      any_running = true;
+      output_stream << format_process_log(running_process, i);
+    }
+  }
+
+  if (!any_running)
+    output_stream << "No running processes.\n";
+
+  output_stream << std::endl;
+
+  output_stream << "Finished processes:\n";
+
+  if (terminated_processes_.empty()) {
+    output_stream << "No finished processes.\n";
+  } else {
+    for (const auto &finished_process : terminated_processes_) {
+      output_stream << format_process_log(finished_process, -1);
+    }
+  }
+
+  output_stream << "----------------------------------------\n\n";
 }
 
 void Emulator::process_smi() {

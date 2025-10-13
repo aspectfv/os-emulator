@@ -20,8 +20,9 @@ public:
   void execute_current_instruction(int cpu_core_id);
   const int get_id() const;
   const std::string get_name() const;
-  const int get_total_instructions();
-  const int get_instruction_pointer();
+  const std::string get_created_at() const;
+  const int get_total_instructions() const;
+  const int get_instruction_pointer() const;
   const ProcessState get_state() const;
   const bool is_finished() const;
   const int is_quantum_expired() const;

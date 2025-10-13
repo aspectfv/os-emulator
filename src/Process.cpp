@@ -30,9 +30,15 @@ const int Process::get_id() const { return id_; }
 
 const std::string Process::get_name() const { return name_; }
 
-const int Process::get_total_instructions() { return total_instructions_; }
+const std::string Process::get_created_at() const { return created_at_; }
 
-const int Process::get_instruction_pointer() { return instruction_pointer_; }
+const int Process::get_total_instructions() const {
+  return total_instructions_;
+}
+
+const int Process::get_instruction_pointer() const {
+  return instruction_pointer_;
+}
 
 const Process::ProcessState Process::get_state() const { return state_; }
 
