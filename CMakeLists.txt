@@ -28,7 +28,7 @@ add_executable(OSEmulator
   src/schedulers/RRScheduler.cpp
   src/instructions/Print.cpp
   src/instructions/Declare.cpp
-  src/instructions/Add.cpp
+  src/instructions/Arithmetic.cpp
   src/instructions/Sleep.cpp
   src/Utils.cpp
 )

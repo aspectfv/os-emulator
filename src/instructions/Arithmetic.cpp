@@ -1,11 +1,12 @@
-#include "instructions/Add.hpp"
+#include "instructions/Arithmetic.hpp"
 
-Add::Add(const std::pair<std::string, uint16_t> &var1,
-         const std::variant<std::pair<std::string, uint16_t>, uint16_t> &var2,
-         const std::variant<std::pair<std::string, uint16_t>, uint16_t> &var3)
+Arithmetic::Arithmetic(
+    const std::pair<std::string, uint16_t> &var1,
+    const std::variant<std::pair<std::string, uint16_t>, uint16_t> &var2,
+    const std::variant<std::pair<std::string, uint16_t>, uint16_t> &var3)
     : var1_(var1), var2_(var2), var3_(var3) {}
 
-void Add::execute(InstructionContext context) {
+void Arithmetic::execute(InstructionContext context) {
   if (context.get_variable && context.add_variable) {
     uint16_t value2 = 0;
     uint16_t value3 = 0;
@@ -26,7 +27,20 @@ void Add::execute(InstructionContext context) {
       context.add_variable.value()(std::make_pair(var1_.first, value3));
     }
 
-    uint16_t result = value2 + value3;
-    context.add_variable.value()(std::make_pair(var1_.first, result));
+    switch (operator_) {
+      case Operator::ADD:
+        context.add_variable.value()(
+            std::make_pair(var1_.first, value2 + value3));
+        break;
+      case Operator::SUB:
+        context.add_variable.value()(
+            std::make_pair(var1_.first, value2 - value3));
+        break;
+      default:
+        if (context.add_log) {
+          context.add_log.value()("Unsupported operator in Arithmetic");
+        }
+        break;
+    }
   }
 }
