@@ -263,6 +263,12 @@ void Emulator::start_screen(std::vector<std::string> &args) {
 }
 
 void Emulator::list_screens() {
+  // wait for cpu cycle to finish for accurate report
+  {
+    std::unique_lock<std::mutex> lock(mtx_);
+    cv_.wait(lock, [this] { return cycle_finished_; });
+    cycle_finished_ = false;
+  }
   // does the same as report_util but doesnt log to a file
   log_cpu_util_report(std::cout);
 }
@@ -311,6 +317,7 @@ void Emulator::report_util() {
   if (!is_initialized_)
     throw std::runtime_error("Emulator is not initialized.");
 
+  // wait for cpu cycle to finish for accurate report
   {
     std::unique_lock<std::mutex> lock(mtx_);
     cv_.wait(lock, [this] { return cycle_finished_; });
