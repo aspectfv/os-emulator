@@ -8,7 +8,7 @@ public:
   RRScheduler(int quantum_cycles);
   virtual ~RRScheduler() = default;
   void add_process(Process *process) override;
-  void add_process(Process *process, bool is_preempted) override;
+  void add_process(Process *process, bool is_priority) override;
   Process *get_next_process() override;
   bool has_processes() const override;
   bool is_running() const override;

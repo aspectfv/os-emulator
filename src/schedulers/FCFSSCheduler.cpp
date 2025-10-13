@@ -4,8 +4,8 @@ void FCFSScheduler::add_process(Process *process) {
   ready_queue.push(QueuedProcess{process, false});
 }
 
-void FCFSScheduler::add_process(Process *process, bool is_preempted) {
-  ready_queue.push(QueuedProcess{process, is_preempted});
+void FCFSScheduler::add_process(Process *process, bool is_priority) {
+  ready_queue.push(QueuedProcess{process, is_priority});
 }
 
 Process *FCFSScheduler::get_next_process() {

@@ -153,7 +153,7 @@ void Emulator::handle_returned_processes(
         terminated_processes_.push_back(returned_process);
         break;
       case Process::ProcessState::READY: {
-        scheduler_->add_process(returned_process, true);
+        scheduler_->add_process(returned_process);
 
         if (scheduler_->has_processes()) {
           Process *next_process = scheduler_->get_next_process();
@@ -352,7 +352,7 @@ void Emulator::log_cpu_util_report(std::ostream &output_stream) {
 
   int cpu_utilization = cores_.empty() ? 0 : (busy_cores * 100) / cores_.size();
 
-  output_stream << "CPU utilization: " << cpu_utilization << "\n";
+  output_stream << "CPU utilization: " << cpu_utilization << "%\n";
   output_stream << "Cores used: " << busy_cores << "\n";
   output_stream << "Cores available: " << cores_.size() << "\n\n";
   output_stream << "----------------------------------------\n";
