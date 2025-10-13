@@ -7,6 +7,6 @@ std::string Utils::current_timestamp() {
   std::tm *ltm = std::localtime(&now_time);
 
   char buffer[30];
-  std::strftime(buffer, sizeof(buffer), "%m/%d/%Y, %I:%M:%S %p", ltm);
+  std::strftime(buffer, sizeof(buffer), "%m/%d/%Y %I:%M:%S%p", ltm);
   return std::string(buffer);
 }

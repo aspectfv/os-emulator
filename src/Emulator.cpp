@@ -149,7 +149,6 @@ void Emulator::handle_returned_processes(
 
     switch (returned_process->get_state()) {
       case Process::ProcessState::TERMINATED:
-        processes_.erase(returned_process->get_name());
         terminated_processes_.push_back(returned_process);
         break;
       case Process::ProcessState::READY: {
