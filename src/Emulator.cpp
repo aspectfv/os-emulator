@@ -441,6 +441,4 @@ void Emulator::process_smi() {
     std::cout << "Lines of code: " << current_process_->get_total_instructions()
               << std::endl;
   }
-
-  current_process_->print_instructions();
 }

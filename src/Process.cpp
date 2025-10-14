@@ -10,7 +10,7 @@ Process::Process(const std::string &name, int total_instructions,
       state_(ProcessState::NEW), quantum_remaining_(quantum_cycles) {}
 
 void Process::execute_current_instruction(int cpu_core_id) {
-  if (instruction_pointer_ < total_instructions_) {
+  if (instruction_pointer_ < instructions_.size()) {
     instructions_[instruction_pointer_]->execute(
         {.add_log =
              [this, cpu_core_id](const std::string &message) {
@@ -67,10 +67,12 @@ const int Process::is_quantum_expired() const {
 }
 
 void Process::increment_instruction_pointer() {
-  if (instruction_pointer_ < total_instructions_)
+  if (instruction_pointer_ < instructions_.size())
     instruction_pointer_++;
-  else
+  if (instruction_pointer_ >= instructions_.size()) {
     state_ = ProcessState::TERMINATED;
+    total_instructions_ = instructions_.size();
+  }
 }
 
 void Process::set_instructions(
@@ -91,19 +93,4 @@ void Process::decrement_sleep_ticks() {
     sleep_ticks_--;
   else
     state_ = ProcessState::READY;
-}
-
-void Process::print_instructions() const {
-  for (size_t i = 0; i < instructions_.size(); ++i) {
-    std::string type_name = typeid(*instructions_[i]).name();
-
-    // Remove leading digits
-    size_t pos = 0;
-    while (pos < type_name.size() && std::isdigit(type_name[pos])) {
-      ++pos;
-    }
-    type_name = type_name.substr(pos);
-
-    std::cout << i << ": " << type_name << "\n";
-  }
 }
