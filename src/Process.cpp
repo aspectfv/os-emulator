@@ -108,7 +108,4 @@ void Process::print_instructions() const {
 
     std::cout << i << ": " << type_name << "\n";
   }
-
-  std::cout << std::endl;
-  std::cout << total_instructions_ << std::endl;
 }

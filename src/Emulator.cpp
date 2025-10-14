@@ -172,18 +172,16 @@ void Emulator::handle_returned_processes(
 }
 
 void Emulator::handle_sleeping_processes() {
-  auto it = std::remove_if(
-      sleeping_processes_.begin(), sleeping_processes_.end(),
-      [this](Process *process) {
-        process->decrement_sleep_ticks();
-        if (process->get_state() == Process::ProcessState::READY) {
-          scheduler_->add_process(process, true);
-          std::cout << "Process " << process->get_name()
-                    << " woke up and is now READY." << std::endl;
-          return true;
-        }
-        return false;
-      });
+  auto it = std::remove_if(sleeping_processes_.begin(),
+                           sleeping_processes_.end(), [this](Process *process) {
+                             process->decrement_sleep_ticks();
+                             if (process->get_state() ==
+                                 Process::ProcessState::READY) {
+                               scheduler_->add_process(process, true);
+                               return true;
+                             }
+                             return false;
+                           });
   sleeping_processes_.erase(it, sleeping_processes_.end());
 }
 
