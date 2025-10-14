@@ -6,7 +6,7 @@
 
 class Arithmetic : public IInstruction {
 public:
-  enum class Operator { ADD, SUB };
+  enum class Operator { ADD, SUBTRACT };
   using Operand = std::variant<std::string, uint16_t>;
 
   Arithmetic(const std::string &var1, const Operand &var2, const Operand &var3,

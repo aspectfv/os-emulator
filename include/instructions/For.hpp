@@ -3,10 +3,10 @@
 
 class For : public IInstruction {
 public:
-  For(const std::vector<IInstruction *> &instructions, int repeats);
+  For(std::vector<std::unique_ptr<IInstruction>> instructions, int repeats);
   void execute(InstructionContext context) override;
 
 private:
-  std::vector<IInstruction *> instructions_;
+  std::vector<std::unique_ptr<IInstruction>> instructions_;
   int repeats_;
 };

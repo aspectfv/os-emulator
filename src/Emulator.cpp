@@ -176,7 +176,7 @@ void Emulator::initialize() {
   if (!config_.load(config_file))
     throw std::runtime_error("Configuration not loaded.");
 
-  for (int i = 0; i < config_.get_num_cpu(); i++) {
+  for (int i = 0; i < config_.get_num_cpu(); ++i) {
     cores_.emplace_back(i, config_.get_scheduler(),
                         config_.get_delay_per_exec());
   }

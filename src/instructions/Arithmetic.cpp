@@ -18,7 +18,7 @@ void Arithmetic::execute(InstructionContext context) {
     case Operator::ADD:
       result = a + b;
       break;
-    case Operator::SUB:
+    case Operator::SUBTRACT:
       result = a - b;
       break;
   }

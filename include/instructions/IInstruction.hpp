@@ -5,6 +5,7 @@
 
 // forward declare to avoid circular dependency
 class Process;
+class IInstruction;
 
 struct InstructionContext {
   std::function<void(const std::string &)> add_log = [](const std::string &) {};
@@ -15,8 +16,8 @@ struct InstructionContext {
   std::function<void(std::pair<std::string, uint16_t>)> add_variable =
       [](std::pair<std::string, uint16_t>) {};
 
-  std::function<void(const std::vector<class IInstruction *> &)>
-      add_instructions = [](std::vector<IInstruction *>) {};
+  std::function<void(std::vector<std::unique_ptr<IInstruction>>)>
+      add_instructions = [](std::vector<std::unique_ptr<IInstruction>>) {};
 
   std::function<void(uint8_t)> sleep = [](uint8_t) {};
 };
