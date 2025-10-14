@@ -1,6 +1,5 @@
 #pragma once
 #include <functional>
-#include <optional>
 #include <string>
 #include <utility>
 
@@ -8,11 +7,18 @@
 class Process;
 
 struct InstructionContext {
-  std::optional<std::function<void(const std::string &)>> add_log;
-  std::optional<std::function<uint16_t(const std::string &)>> get_variable;
-  std::optional<std::function<void(std::pair<std::string, uint16_t>)>>
-      add_variable;
-  std::optional<std::function<void(uint8_t)>> sleep;
+  std::function<void(const std::string &)> add_log = [](const std::string &) {};
+
+  std::function<uint16_t(const std::string &)> get_variable =
+      [](const std::string &) { return uint16_t{0}; };
+
+  std::function<void(std::pair<std::string, uint16_t>)> add_variable =
+      [](std::pair<std::string, uint16_t>) {};
+
+  std::function<void(std::vector<class IInstruction *>)> add_instructions =
+      [](std::vector<IInstruction *>) {};
+
+  std::function<void(uint8_t)> sleep = [](uint8_t) {};
 };
 
 class IInstruction {
