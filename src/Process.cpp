@@ -1,14 +1,12 @@
 #include "Process.hpp"
-#include "Utils.hpp"
 #include <iostream>
 
 // auto inc process id
 int Process::next_id_ = 0;
 
-Process::Process(const std::string &name, const std::string &created_at,
-                 int total_instructions, int quantum_cycles)
-    : id_(next_id_++), name_(name), created_at_(created_at),
-      total_instructions_(total_instructions), instruction_pointer_(0),
+Process::Process(const std::string &name, int total_instructions,
+                 int quantum_cycles)
+    : id_(next_id_++), name_(name), total_instructions_(total_instructions),
       state_(ProcessState::NEW), quantum_remaining_(quantum_cycles) {}
 
 void Process::execute_current_instruction(int cpu_core_id) {
@@ -17,9 +15,7 @@ void Process::execute_current_instruction(int cpu_core_id) {
         {.add_log =
              [this, cpu_core_id](const std::string &message) {
                this->logs_.push_back(
-                   ProcessLog{.timestamp = Utils::current_timestamp(),
-                              .core_id = cpu_core_id,
-                              .message = message});
+                   ProcessLog{.core_id = cpu_core_id, .message = message});
              },
          .get_variable =
              [this](const std::string &var_name) {
@@ -80,8 +76,6 @@ void Process::increment_instruction_pointer() {
 void Process::set_instructions(
     std::vector<std::unique_ptr<IInstruction>> &&instructions) {
   instructions_ = std::move(instructions);
-  total_instructions_ = instructions_.size();
-  instruction_pointer_ = 0;
 }
 
 void Process::set_state(ProcessState state) { state_ = state; }

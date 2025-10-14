@@ -1,4 +1,5 @@
 #pragma once
+#include "Utils.hpp"
 #include "instructions/IInstruction.hpp"
 #include <memory>
 #include <string>
@@ -6,7 +7,7 @@
 #include <vector>
 
 struct ProcessLog {
-  std::string timestamp;
+  std::string timestamp = Utils::current_timestamp();
   int core_id;
   std::string message;
 };
@@ -15,8 +16,7 @@ class Process {
 public:
   enum class ProcessState { NEW, READY, RUNNING, SLEEPING, TERMINATED };
 
-  Process(const std::string &name, const std::string &created_at,
-          int total_instructions, int quantum_cycles);
+  Process(const std::string &name, int total_instructions, int quantum_cycles);
   void execute_current_instruction(int cpu_core_id);
   const int get_id() const;
   const std::string get_name() const;
@@ -40,11 +40,11 @@ private:
   static int next_id_;
   int id_;
   std::string name_;
-  std::string created_at_;
+  std::string created_at_ = Utils::current_timestamp();
   std::vector<std::unique_ptr<IInstruction>> instructions_;
   std::unordered_map<std::string, int> symbol_table_;
   int total_instructions_;
-  int instruction_pointer_;
+  int instruction_pointer_ = 0;
   ProcessState state_;
   int quantum_remaining_;
   std::vector<ProcessLog> logs_;

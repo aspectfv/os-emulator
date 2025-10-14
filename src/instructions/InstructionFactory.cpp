@@ -64,6 +64,12 @@ InstructionFactory::create_instructions(const std::string &process_name,
         break;
       }
       case InstructionFactory::InstructionType::FOR: {
+        // can't have loop without 2 or more instructions
+        if (curr_instructions_count >= num_instructions - 1)
+          continue;
+
+        ++curr_instructions_count; // loop itself counts as an instruction
+
         int remaining = num_instructions - curr_instructions_count;
 
         // 1 to 5 instructions
