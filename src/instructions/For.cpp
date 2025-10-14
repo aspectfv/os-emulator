@@ -18,13 +18,21 @@ void For::execute(InstructionContext context) {
   for (int i = 0; i < repeats_; ++i) {
     std::vector<std::unique_ptr<IInstruction>> cloned_instructions;
 
+    context.add_log("For loop iteration " + std::to_string(i + 1));
+
     for (const auto &instr : instructions_) {
       cloned_instructions.push_back(instr->clone());
 
       // suppress warning hack
       const IInstruction &instr_ref = *instr;
-      context.add_log("For loop iteration " + std::to_string(i + 1) +
-                      ": Instruction type " + typeid(instr_ref).name());
+      std::string instruction_type = typeid(instr_ref).name();
+
+      instruction_type.erase(
+          std::remove_if(instruction_type.begin(), instruction_type.end(),
+                         [](unsigned char c) { return std::isdigit(c); }),
+          instruction_type.end());
+
+      context.add_log("Instruction Type: " + instruction_type);
     }
 
     context.add_instructions(std::move(cloned_instructions));
