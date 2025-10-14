@@ -104,9 +104,9 @@ Arithmetic::Operand InstructionFactory::random_operand() {
   int choice = rand() % 2;
 
   switch (choice) {
-    case 0: // Variable
+    case 0: // variable
       return Arithmetic::Operand("var" + std::to_string(rand() % 100));
-    case 1: // Constant
+    case 1: // constant
       return Arithmetic::Operand(uint16_t(rand() % 100));
     default:
       return Arithmetic::Operand(uint16_t(0));

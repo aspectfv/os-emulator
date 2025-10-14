@@ -120,14 +120,14 @@ void Emulator::generate_processes() {
         config_.get_min_ins() +
         (rand() % (config_.get_max_ins() - config_.get_min_ins() + 1));
 
-    std::unique_ptr<Process> process = std::make_unique<Process>(
-        process_name, Utils::current_timestamp(), num_instructions,
-        config_.get_quantum_cycles());
-
     std::vector<std::unique_ptr<IInstruction>> instructions =
         InstructionFactory::create_instructions(process_name, num_instructions,
                                                 config_.get_max_ins(),
                                                 config_.get_min_ins());
+
+    std::unique_ptr<Process> process = std::make_unique<Process>(
+        process_name, Utils::current_timestamp(), num_instructions,
+        config_.get_quantum_cycles());
 
     process->set_instructions(std::move(instructions));
 
@@ -237,14 +237,14 @@ void Emulator::start_screen(std::vector<std::string> &args) {
         config_.get_min_ins() +
         (rand() % (config_.get_max_ins() - config_.get_min_ins() + 1));
 
-    std::unique_ptr<Process> new_process = std::make_unique<Process>(
-        process_name, Utils::current_timestamp(), num_instructions,
-        config_.get_quantum_cycles());
-
     std::vector<std::unique_ptr<IInstruction>> instructions =
         InstructionFactory::create_instructions(process_name, num_instructions,
                                                 config_.get_max_ins(),
                                                 config_.get_min_ins());
+
+    std::unique_ptr<Process> new_process = std::make_unique<Process>(
+        process_name, Utils::current_timestamp(), num_instructions,
+        config_.get_quantum_cycles());
 
     new_process->set_instructions(std::move(instructions));
 
