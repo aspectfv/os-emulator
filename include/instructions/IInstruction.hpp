@@ -1,7 +1,9 @@
 #pragma once
 #include <functional>
+#include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 // forward declare to avoid circular dependency
 class Process;
@@ -20,4 +22,5 @@ class IInstruction {
 public:
   virtual ~IInstruction() = default;
   virtual void execute(InstructionContext context) = 0;
+  virtual std::unique_ptr<IInstruction> clone() = 0;
 };

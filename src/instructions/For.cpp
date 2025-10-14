@@ -13,8 +13,22 @@ void For::execute(InstructionContext context) {
   ++depth;
 
   for (int i = 0; i < repeats_; ++i) {
-    context.add_instructions(std::move(instructions_));
+    std::vector<std::unique_ptr<IInstruction>> cloned_instructions;
+
+    for (const auto &instr : instructions_) {
+      cloned_instructions.push_back(instr->clone());
+    }
+
+    context.add_instructions(std::move(cloned_instructions));
   }
 
   --depth;
+}
+
+std::unique_ptr<IInstruction> For::clone() {
+  std::vector<std::unique_ptr<IInstruction>> cloned_instructions;
+  for (const auto &instr : instructions_) {
+    cloned_instructions.push_back(instr->clone());
+  }
+  return std::make_unique<For>(std::move(cloned_instructions), repeats_);
 }

@@ -12,6 +12,7 @@ public:
   Arithmetic(const std::string &var1, const Operand &var2, const Operand &var3,
              const Operator &op);
   void execute(InstructionContext context) override;
+  std::unique_ptr<IInstruction> clone() override;
 
 private:
   std::string var1_;

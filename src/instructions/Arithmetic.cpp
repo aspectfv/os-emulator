@@ -25,3 +25,7 @@ void Arithmetic::execute(InstructionContext context) {
 
   context.add_variable({var1_, result});
 }
+
+std::unique_ptr<IInstruction> Arithmetic::clone() {
+  return std::make_unique<Arithmetic>(var1_, var2_, var3_, operator_);
+}
