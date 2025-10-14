@@ -32,12 +32,16 @@ void Process::execute_current_instruction(int cpu_core_id) {
          .add_instructions =
              [this](std::vector<std::unique_ptr<IInstruction>>
                         &&new_instructions) {
-               this->instructions_.insert(
-                   this->instructions_.end(),
+               // insert after current instruction
+               auto insert_pos =
+                   instructions_.begin() + instruction_pointer_ + 1;
+
+               instructions_.insert(
+                   insert_pos,
                    std::make_move_iterator(new_instructions.begin()),
                    std::make_move_iterator(new_instructions.end()));
-               this->total_instructions_ = this->instructions_.size();
              },
+
          .sleep =
              [this](int ticks) {
                this->sleep_ticks_ = ticks;

@@ -12,6 +12,9 @@ void For::execute(InstructionContext context) {
 
   ++depth;
 
+  context.add_log("Entering For loop with " + std::to_string(repeats_) +
+                  " repeats at depth " + std::to_string(depth));
+
   for (int i = 0; i < repeats_; ++i) {
     std::vector<std::unique_ptr<IInstruction>> cloned_instructions;
 
