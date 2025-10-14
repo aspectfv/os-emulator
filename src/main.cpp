@@ -3,6 +3,8 @@
 #include <string>
 
 int main() {
+  srand(time(NULL));
+
   Emulator emulator;
   std::string input;
 
