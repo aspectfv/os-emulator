@@ -1,7 +1,7 @@
 #include "Emulator.hpp"
 #include "Process.hpp"
 #include "Utils.hpp"
-#include "instructions/Print.hpp"
+#include "instructions/InstructionFactory.hpp"
 #include "schedulers/SchedulerFactory.hpp"
 #include <chrono>
 #include <fstream>
@@ -124,12 +124,9 @@ void Emulator::generate_processes() {
         process_name, Utils::current_timestamp(), num_instructions,
         config_.get_quantum_cycles());
 
-    std::vector<std::unique_ptr<IInstruction>> instructions;
-
-    for (int j = 0; j < num_instructions; ++j) {
-      instructions.push_back(std::make_unique<Print>(
-          process_name + ": Instruction " + std::to_string(j + 1)));
-    }
+    std::vector<std::unique_ptr<IInstruction>> instructions =
+        InstructionFactory::create_instructions(
+            process_name, config_.get_min_ins(), config_.get_max_ins());
 
     process->set_instructions(std::move(instructions));
 
@@ -243,12 +240,9 @@ void Emulator::start_screen(std::vector<std::string> &args) {
         process_name, Utils::current_timestamp(), num_instructions,
         config_.get_quantum_cycles());
 
-    std::vector<std::unique_ptr<IInstruction>> instructions;
-
-    for (int j = 0; j < num_instructions; ++j) {
-      instructions.push_back(std::make_unique<Print>(
-          process_name + ": Instruction " + std::to_string(j + 1)));
-    }
+    std::vector<std::unique_ptr<IInstruction>> instructions =
+        InstructionFactory::create_instructions(
+            process_name, config_.get_min_ins(), config_.get_max_ins());
 
     new_process->set_instructions(std::move(instructions));
 

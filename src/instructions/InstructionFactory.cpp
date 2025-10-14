@@ -3,48 +3,55 @@
 #include "instructions/Declare.hpp"
 #include "instructions/Print.hpp"
 #include "instructions/Sleep.hpp"
-#include <cstdlib>
-#include <ctime>
 
 std::vector<std::unique_ptr<IInstruction>>
 InstructionFactory::create_instructions(const std::string &process_name,
-                                        int min_ins, int max_ins) {
+                                        int min_ins, int max_ins,
+                                        int start_depth, int max_depth) {
+  if (start_depth >= max_depth) {
+    return {};
+  }
+
   std::vector<std::unique_ptr<IInstruction>> instructions;
+
   int num_instructions = rand() % (max_ins - min_ins + 1) + min_ins;
 
-  // ensure at least 2 declare instructions for arithmetic operations
-  instructions.push_back(create_declare("add_var", rand() % 100));
-  instructions.push_back(create_declare("sub_var", rand() % 100));
+  for (int i = 0; i < num_instructions; ++i) {
+    int instruction_type =
+        rand() %
+        (static_cast<int>(InstructionFactory::InstructionType::FOR) + 1);
 
-  for (int i = 2; i < num_instructions; ++i) {
-    int instruction_type = rand() % static_cast<int>(InstructionType::FOR);
-
-    switch (static_cast<InstructionType>(instruction_type)) {
-      case InstructionType::PRINT:
-        instructions.push_back(
-            create_print("Hello from process " + process_name));
+    switch (
+        static_cast<InstructionFactory::InstructionType>(instruction_type)) {
+      case InstructionFactory::InstructionType::PRINT:
+        instructions.push_back(InstructionFactory::create_print(
+            "Hello from process " + process_name));
         break;
-      case InstructionType::DECLARE:
-        instructions.push_back(
-            create_declare("var" + std::to_string(i), rand() % 100));
+      case InstructionFactory::InstructionType::DECLARE:
+        instructions.push_back(InstructionFactory::create_declare(
+            "var" + std::to_string(i), rand() % 100));
         break;
-      case InstructionType::ADD:
-        instructions.push_back(create_arithmetic("add_var", random_operand(),
-                                                 random_operand(),
-                                                 Arithmetic::Operator::ADD));
+      case InstructionFactory::InstructionType::ADD:
+        instructions.push_back(InstructionFactory::create_arithmetic(
+            "add_var", InstructionFactory::random_operand(),
+            InstructionFactory::random_operand(), Arithmetic::Operator::ADD));
         break;
-      case InstructionType::SUBTRACT:
-        instructions.push_back(
-            create_arithmetic("sub_var", random_operand(), random_operand(),
-                              Arithmetic::Operator::SUBTRACT));
+      case InstructionFactory::InstructionType::SUBTRACT:
+        instructions.push_back(InstructionFactory::create_arithmetic(
+            "sub_var", InstructionFactory::random_operand(),
+            InstructionFactory::random_operand(),
+            Arithmetic::Operator::SUBTRACT));
         break;
-      case InstructionType::SLEEP:
-        instructions.push_back(
-            create_sleep(rand() % 5 + 1)); // sleep between 1 and 5 ticks
+      case InstructionFactory::InstructionType::SLEEP:
+        instructions.push_back(InstructionFactory::create_sleep(
+            rand() % 5 + 1)); // sleep between 1 and 5 ticks
         break;
-      case InstructionType::FOR:
-        // add logic
+      case InstructionFactory::InstructionType::FOR: {
+        instructions.push_back(InstructionFactory::create_for(
+            process_name, min_ins, max_ins, rand() % 5 + 1, start_depth + 1,
+            max_depth)); // repeat between 1 and 5 times
         break;
+      }
       default:
         break;
     }
@@ -72,6 +79,16 @@ std::unique_ptr<Arithmetic> InstructionFactory::create_arithmetic(
 
 std::unique_ptr<Sleep> InstructionFactory::create_sleep(uint8_t ticks) {
   return std::make_unique<Sleep>(ticks);
+}
+
+std::unique_ptr<For>
+InstructionFactory::create_for(const std::string &process_name, int min_ins,
+                               int max_ins, int repeats, int start_depth,
+                               int max_depth) {
+  return std::make_unique<For>(create_instructions(process_name, min_ins,
+                                                   max_ins, start_depth + 1,
+                                                   max_depth),
+                               repeats);
 }
 
 // helpers

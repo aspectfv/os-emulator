@@ -26,11 +26,15 @@ add_executable(OSEmulator
   src/CPUCore.cpp
   src/schedulers/FCFSScheduler.cpp
   src/schedulers/RRScheduler.cpp
+  src/schedulers/SchedulerFactory.cpp
   src/instructions/Print.cpp
   src/instructions/Declare.cpp
   src/instructions/Arithmetic.cpp
   src/instructions/Sleep.cpp
+  src/instructions/For.cpp
+  src/instructions/InstructionFactory.cpp
   src/Utils.cpp
+
 )
 
 target_include_directories(OSEmulator PRIVATE include)
