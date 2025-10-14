@@ -34,8 +34,6 @@ public:
   void set_state(ProcessState state);
   void set_quantum_remaining(int quantum_cycles);
   void decrement_quantum_remaining();
-  void add_log(const std::string &timestamp, int core_id,
-               const std::string &message);
 
 private:
   static int next_id_;

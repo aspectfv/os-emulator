@@ -11,12 +11,32 @@ Process::Process(const std::string &name, const std::string &created_at,
 
 void Process::execute_current_instruction(int cpu_core_id) {
   if (instruction_pointer_ < total_instructions_) {
-    instructions_[instruction_pointer_]->execute(InstructionContext{
-        .add_log =
-            [this, cpu_core_id](const std::string &message) {
-              this->add_log(this->created_at_, cpu_core_id, message);
-            },
-    });
+    instructions_[instruction_pointer_]->execute(
+        {.add_log =
+             [this, cpu_core_id](const std::string &message) {
+               this->logs_.push_back(ProcessLog{.timestamp = "",
+                                                .core_id = cpu_core_id,
+                                                .message = message});
+             },
+         .get_variable =
+             [this](const std::string &var_name) {
+               return this->symbol_table_[var_name];
+             },
+         .add_variable =
+             [this](std::pair<std::string, uint16_t> var) {
+               this->symbol_table_.insert(var);
+             },
+         .add_instructions =
+             [this](std::vector<std::unique_ptr<IInstruction>>
+                        &&new_instructions) {
+               this->instructions_.insert(
+                   this->instructions_.end(),
+                   std::make_move_iterator(new_instructions.begin()),
+                   std::make_move_iterator(new_instructions.end()));
+               this->total_instructions_ = this->instructions_.size();
+             },
+         .sleep =
+             [this](uint8_t cycles) { this->quantum_remaining_ -= cycles; }});
   }
 }
 
@@ -60,8 +80,3 @@ void Process::set_quantum_remaining(int quantum_cycles) {
 }
 
 void Process::decrement_quantum_remaining() { quantum_remaining_--; }
-
-void Process::add_log(const std::string &timestamp, int core_id,
-                      const std::string &message) {
-  logs_.push_back({timestamp, core_id, message});
-}
