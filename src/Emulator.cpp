@@ -125,8 +125,9 @@ void Emulator::generate_processes() {
         config_.get_quantum_cycles());
 
     std::vector<std::unique_ptr<IInstruction>> instructions =
-        InstructionFactory::create_instructions(
-            process_name, config_.get_min_ins(), config_.get_max_ins());
+        InstructionFactory::create_instructions(process_name, num_instructions,
+                                                config_.get_max_ins(),
+                                                config_.get_min_ins());
 
     process->set_instructions(std::move(instructions));
 
@@ -241,8 +242,9 @@ void Emulator::start_screen(std::vector<std::string> &args) {
         config_.get_quantum_cycles());
 
     std::vector<std::unique_ptr<IInstruction>> instructions =
-        InstructionFactory::create_instructions(
-            process_name, config_.get_min_ins(), config_.get_max_ins());
+        InstructionFactory::create_instructions(process_name, num_instructions,
+                                                config_.get_max_ins(),
+                                                config_.get_min_ins());
 
     new_process->set_instructions(std::move(instructions));
 

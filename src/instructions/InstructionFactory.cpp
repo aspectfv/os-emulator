@@ -6,15 +6,14 @@
 
 std::vector<std::unique_ptr<IInstruction>>
 InstructionFactory::create_instructions(const std::string &process_name,
-                                        int min_ins, int max_ins,
-                                        int start_depth, int max_depth) {
+                                        int num_instructions, int max_ins,
+                                        int min_ins, int start_depth,
+                                        int max_depth) {
   if (start_depth >= max_depth) {
     return {};
   }
 
   std::vector<std::unique_ptr<IInstruction>> instructions;
-
-  int num_instructions = rand() % (max_ins - min_ins + 1) + min_ins;
 
   for (int i = 0; i < num_instructions; ++i) {
     int instruction_type =
@@ -47,9 +46,11 @@ InstructionFactory::create_instructions(const std::string &process_name,
             rand() % 5 + 1)); // sleep between 1 and 5 ticks
         break;
       case InstructionFactory::InstructionType::FOR: {
+        int num_instructions = min_ins + (rand() % (max_ins - min_ins + 1));
+        int repeats = rand() % 3 + 1; // repeat between 1 and 3 times
+
         instructions.push_back(InstructionFactory::create_for(
-            process_name, min_ins, max_ins, rand() % 5 + 1, start_depth + 1,
-            max_depth)); // repeat between 1 and 5 times
+            process_name, num_instructions, repeats, start_depth, max_depth));
         break;
       }
       default:
@@ -82,9 +83,9 @@ std::unique_ptr<Sleep> InstructionFactory::create_sleep(uint8_t ticks) {
 }
 
 std::unique_ptr<For>
-InstructionFactory::create_for(const std::string &process_name, int min_ins,
-                               int max_ins, int repeats, int start_depth,
-                               int max_depth) {
+InstructionFactory::create_for(const std::string &process_name,
+                               int num_instructions, int min_ins, int max_ins,
+                               int repeats, int start_depth, int max_depth) {
   return std::make_unique<For>(create_instructions(process_name, min_ins,
                                                    max_ins, start_depth + 1,
                                                    max_depth),

@@ -15,8 +15,9 @@ class InstructionFactory {
 public:
   enum class InstructionType { PRINT, DECLARE, ADD, SUBTRACT, SLEEP, FOR };
   static std::vector<std::unique_ptr<IInstruction>>
-  create_instructions(const std::string &process_name, int min_ins, int max_ins,
-                      int start_depth = 0, int max_depth = 3);
+  create_instructions(const std::string &process_name, int num_instructions,
+                      int max_ins, int min_ins, int start_depth = 0,
+                      int max_depth = 3);
 
 private:
   static std::unique_ptr<Print> create_print(const std::string &msg);
@@ -26,10 +27,9 @@ private:
   create_arithmetic(const std::string &var1, const Arithmetic::Operand &var2,
                     const Arithmetic::Operand &var3, Arithmetic::Operator op);
   static std::unique_ptr<Sleep> create_sleep(uint8_t ticks);
-  static std::unique_ptr<For> create_for(const std::string &process_name,
-                                         int min_ins, int max_ins, int repeats,
-                                         int start_depth = 0,
-                                         int max_depth = 3);
+  static std::unique_ptr<For>
+  create_for(const std::string &process_name, int num_instructions, int min_ins,
+             int max_ins, int repeats, int start_depth = 0, int max_depth = 3);
 
   // helpers
   static Arithmetic::Operand random_operand();
