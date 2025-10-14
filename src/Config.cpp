@@ -40,11 +40,9 @@ bool Config::load(const std::string &filename) {
     } else if (key == "scheduler") {
       std::string scheduler = val;
 
-      scheduler.erase(
-          std::remove_if(scheduler.begin(), scheduler.end(),
-                         [](unsigned char c) { return std::isspace(c); }),
-          scheduler.end());
-
+      scheduler.erase(std::remove(scheduler.begin(), scheduler.end(), '\"'),
+                      scheduler.end()); // remove quotes if any
+      //
       if (scheduler != "rr" && scheduler != "fcfs") {
         std::cerr << "Invalid scheduler type: " << scheduler
                   << ". Defaulting to 'rr'." << std::endl;
