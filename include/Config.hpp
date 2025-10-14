@@ -2,8 +2,6 @@
 
 #include <string>
 
-// change types to uint32_t later when appropriate
-
 class Config {
 public:
   static Config &instance() {
@@ -11,13 +9,13 @@ public:
     return instance;
   }
   bool load(const std::string &filename);
-  int get_num_cpu() const;
+  uint8_t get_num_cpu() const;
   std::string get_scheduler() const;
-  int get_quantum_cycles() const;
-  int get_batch_process_freq() const;
-  int get_min_ins() const;
-  int get_max_ins() const;
-  int get_delay_per_exec() const;
+  uint32_t get_quantum_cycles() const;
+  uint32_t get_batch_process_freq() const;
+  uint32_t get_min_ins() const;
+  uint32_t get_max_ins() const;
+  uint32_t get_delay_per_exec() const;
 
 private:
   Config();
@@ -29,11 +27,11 @@ private:
   Config(Config &&) = delete;
   Config &operator=(Config &&) = delete;
 
-  int num_cpu_;
+  uint8_t num_cpu_;
   std::string scheduler_;
-  int quantum_cycles_;
-  int batch_process_freq_;
-  int min_ins_;
-  int max_ins_;
-  int delay_per_exec_;
+  uint32_t quantum_cycles_;
+  uint32_t batch_process_freq_;
+  uint32_t min_ins_;
+  uint32_t max_ins_;
+  uint32_t delay_per_exec_;
 };
