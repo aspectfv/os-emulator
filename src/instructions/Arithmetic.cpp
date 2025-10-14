@@ -1,4 +1,5 @@
 #include "instructions/Arithmetic.hpp"
+#include <algorithm>
 
 Arithmetic::Arithmetic(const std::string &var1, const Operand &var2,
                        const Operand &var3, const Operator &op)
@@ -15,12 +16,20 @@ void Arithmetic::execute(InstructionContext context) {
 
   uint16_t result = 0;
   switch (operator_) {
-    case Operator::ADD:
-      result = a + b;
+    case Operator::ADD: {
+      int a_val = static_cast<int>(a);
+      int b_val = static_cast<int>(b);
+      result = std::clamp<int>(a_val + b_val, 0,
+                               std::numeric_limits<uint16_t>::max());
       break;
-    case Operator::SUBTRACT:
-      result = a - b;
+    }
+    case Operator::SUBTRACT: {
+      int a_val = static_cast<int>(a);
+      int b_val = static_cast<int>(b);
+      result = std::clamp<int>(a_val - b_val, 0,
+                               std::numeric_limits<uint16_t>::max());
       break;
+    }
   }
 
   context.add_variable({var1_, result});

@@ -26,10 +26,15 @@ InstructionFactory::create_instructions(const std::string &process_name,
         instructions.push_back(InstructionFactory::create_print(
             "Hello from process " + process_name));
         break;
-      case InstructionFactory::InstructionType::DECLARE:
-        instructions.push_back(InstructionFactory::create_declare(
-            "var" + std::to_string(i), rand() % 100));
+      case InstructionFactory::InstructionType::DECLARE: {
+        std::string var_name =
+            "var" + std::to_string(rand() % num_instructions);
+        uint16_t val = rand() % (std::numeric_limits<uint16_t>::max() + 1);
+
+        instructions.push_back(
+            InstructionFactory::create_declare(var_name, val));
         break;
+      }
       case InstructionFactory::InstructionType::ADD:
         instructions.push_back(InstructionFactory::create_arithmetic(
             "add_var", InstructionFactory::random_operand(),
@@ -41,10 +46,12 @@ InstructionFactory::create_instructions(const std::string &process_name,
             InstructionFactory::random_operand(),
             Arithmetic::Operator::SUBTRACT));
         break;
-      case InstructionFactory::InstructionType::SLEEP:
-        instructions.push_back(InstructionFactory::create_sleep(
-            rand() % 5 + 1)); // sleep between 1 and 5 ticks
+      case InstructionFactory::InstructionType::SLEEP: {
+        uint8_t ticks = rand() % 5 + 1; // sleep between 1 and 5 ticks
+
+        instructions.push_back(InstructionFactory::create_sleep(ticks));
         break;
+      }
       case InstructionFactory::InstructionType::FOR: {
         int num_instructions = min_ins + (rand() % (max_ins - min_ins + 1));
         int repeats = rand() % 3 + 1; // repeat between 1 and 3 times

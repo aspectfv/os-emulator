@@ -34,6 +34,7 @@ public:
   void set_state(ProcessState state);
   void set_quantum_remaining(int quantum_cycles);
   void decrement_quantum_remaining();
+  void print_instructions() const;
 
 private:
   static int next_id_;

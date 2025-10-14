@@ -1,4 +1,5 @@
 #include "Process.hpp"
+#include <iostream>
 
 // auto inc process id
 int Process::next_id_ = 0;
@@ -80,3 +81,18 @@ void Process::set_quantum_remaining(int quantum_cycles) {
 }
 
 void Process::decrement_quantum_remaining() { quantum_remaining_--; }
+
+void Process::print_instructions() const {
+  for (size_t i = 0; i < instructions_.size(); ++i) {
+    std::string type_name = typeid(*instructions_[i]).name();
+
+    // Remove leading digits
+    size_t pos = 0;
+    while (pos < type_name.size() && std::isdigit(type_name[pos])) {
+      ++pos;
+    }
+    type_name = type_name.substr(pos);
+
+    std::cout << i << ": " << type_name << "\n";
+  }
+}
