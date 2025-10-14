@@ -14,8 +14,9 @@ InstructionFactory::create_instructions(const std::string &process_name,
   }
 
   std::vector<std::unique_ptr<IInstruction>> instructions;
+  int curr_instructions_count = 0;
 
-  for (int i = 0; i < num_instructions; ++i) {
+  while (curr_instructions_count < num_instructions) {
     int instruction_type =
         rand() %
         (static_cast<int>(InstructionFactory::InstructionType::FOR) + 1);
@@ -25,6 +26,8 @@ InstructionFactory::create_instructions(const std::string &process_name,
       case InstructionFactory::InstructionType::PRINT:
         instructions.push_back(InstructionFactory::create_print(
             "Hello from process " + process_name));
+
+        ++curr_instructions_count;
         break;
       case InstructionFactory::InstructionType::DECLARE: {
         std::string var_name =
@@ -33,31 +36,50 @@ InstructionFactory::create_instructions(const std::string &process_name,
 
         instructions.push_back(
             InstructionFactory::create_declare(var_name, val));
+
+        ++curr_instructions_count;
         break;
       }
       case InstructionFactory::InstructionType::ADD:
         instructions.push_back(InstructionFactory::create_arithmetic(
             "add_var", InstructionFactory::random_operand(),
             InstructionFactory::random_operand(), Arithmetic::Operator::ADD));
+
+        ++curr_instructions_count;
         break;
       case InstructionFactory::InstructionType::SUBTRACT:
         instructions.push_back(InstructionFactory::create_arithmetic(
             "sub_var", InstructionFactory::random_operand(),
             InstructionFactory::random_operand(),
             Arithmetic::Operator::SUBTRACT));
+
+        ++curr_instructions_count;
         break;
       case InstructionFactory::InstructionType::SLEEP: {
-        uint8_t ticks = rand() % 5 + 1; // sleep between 1 and 5 ticks
+        uint8_t ticks = 1 + rand() % 5; // sleep between 1 and 5 ticks
 
         instructions.push_back(InstructionFactory::create_sleep(ticks));
+
+        ++curr_instructions_count;
         break;
       }
       case InstructionFactory::InstructionType::FOR: {
-        int num_instructions = min_ins + (rand() % (max_ins - min_ins + 1));
-        int repeats = rand() % 3 + 1; // repeat between 1 and 3 times
+        int remaining = num_instructions - curr_instructions_count;
+
+        // 1 to 5 instructions
+        int loop_instructions_count = std::min(remaining, 1 + rand() % 5);
+
+        int remaining_repeats = remaining / loop_instructions_count;
+
+        // 1 to 5 repeats
+        int repeats = std::min(remaining_repeats, 1 + rand() % 5);
 
         instructions.push_back(InstructionFactory::create_for(
-            process_name, num_instructions, repeats, start_depth, max_depth));
+            process_name, loop_instructions_count, min_ins, max_ins, repeats,
+            start_depth, max_depth));
+
+        curr_instructions_count += loop_instructions_count * repeats;
+
         break;
       }
       default:
@@ -93,10 +115,11 @@ std::unique_ptr<For>
 InstructionFactory::create_for(const std::string &process_name,
                                int num_instructions, int min_ins, int max_ins,
                                int repeats, int start_depth, int max_depth) {
-  return std::make_unique<For>(create_instructions(process_name, min_ins,
-                                                   max_ins, start_depth + 1,
-                                                   max_depth),
-                               repeats);
+
+  return std::make_unique<For>(
+      create_instructions(process_name, num_instructions, max_ins, min_ins,
+                          start_depth + 1, max_depth),
+      repeats);
 }
 
 // helpers
