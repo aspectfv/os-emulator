@@ -1,4 +1,5 @@
 #include "Process.hpp"
+#include "Utils.hpp"
 #include <iostream>
 
 // auto inc process id
@@ -15,9 +16,10 @@ void Process::execute_current_instruction(int cpu_core_id) {
     instructions_[instruction_pointer_]->execute(
         {.add_log =
              [this, cpu_core_id](const std::string &message) {
-               this->logs_.push_back(ProcessLog{.timestamp = "",
-                                                .core_id = cpu_core_id,
-                                                .message = message});
+               this->logs_.push_back(
+                   ProcessLog{.timestamp = Utils::current_timestamp(),
+                              .core_id = cpu_core_id,
+                              .message = message});
              },
          .get_variable =
              [this](const std::string &var_name) {
@@ -37,7 +39,10 @@ void Process::execute_current_instruction(int cpu_core_id) {
                this->total_instructions_ = this->instructions_.size();
              },
          .sleep =
-             [this](uint8_t cycles) { this->quantum_remaining_ -= cycles; }});
+             [this](int ticks) {
+               this->sleep_ticks_ = ticks;
+               this->state_ = ProcessState::SLEEPING;
+             }});
   }
 }
 
@@ -57,15 +62,16 @@ const int Process::get_instruction_pointer() const {
 
 const Process::ProcessState Process::get_state() const { return state_; }
 
-const bool Process::is_finished() const {
-  return instruction_pointer_ >= total_instructions_;
-}
-
 const int Process::is_quantum_expired() const {
   return quantum_remaining_ <= 0;
 }
 
-void Process::increment_instruction_pointer() { instruction_pointer_++; }
+void Process::increment_instruction_pointer() {
+  if (instruction_pointer_ < total_instructions_)
+    instruction_pointer_++;
+  else
+    state_ = ProcessState::TERMINATED;
+}
 
 void Process::set_instructions(
     std::vector<std::unique_ptr<IInstruction>> &&instructions) {
@@ -81,6 +87,13 @@ void Process::set_quantum_remaining(int quantum_cycles) {
 }
 
 void Process::decrement_quantum_remaining() { quantum_remaining_--; }
+
+void Process::decrement_sleep_ticks() {
+  if (sleep_ticks_ > 0)
+    sleep_ticks_--;
+  else
+    state_ = ProcessState::READY;
+}
 
 void Process::print_instructions() const {
   for (size_t i = 0; i < instructions_.size(); ++i) {

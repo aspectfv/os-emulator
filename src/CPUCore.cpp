@@ -1,6 +1,7 @@
 #include "CPUCore.hpp"
 #include "Process.hpp"
 #include <chrono>
+#include <iostream>
 
 CPUCore::CPUCore(int id, const std::string scheduler, const int delay_per_exec)
     : id_(id), scheduler_(scheduler), delay_per_exec_(delay_per_exec) {}
@@ -11,13 +12,18 @@ Process *CPUCore::tick() {
   current_process_->execute_current_instruction(id_);
   current_process_->increment_instruction_pointer();
 
-  if (current_process_->is_finished()) {
-    current_process_->set_state(Process::ProcessState::TERMINATED);
-
+  if (current_process_->get_state() == Process::ProcessState::TERMINATED) {
     Process *finished_process = current_process_;
     current_process_ = nullptr;
 
     return finished_process;
+  }
+
+  if (current_process_->get_state() == Process::ProcessState::SLEEPING) {
+    Process *waiting_process = current_process_;
+    current_process_ = nullptr;
+
+    return waiting_process;
   }
 
   if (scheduler_ == "rr") {

@@ -33,6 +33,7 @@ void Arithmetic::execute(InstructionContext context) {
   }
 
   context.add_variable({var1_, result});
+  context.add_log("Arithmetic: " + var1_ + " = " + std::to_string(result));
 }
 
 std::unique_ptr<IInstruction> Arithmetic::clone() {

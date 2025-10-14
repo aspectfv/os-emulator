@@ -13,7 +13,7 @@ struct ProcessLog {
 
 class Process {
 public:
-  enum class ProcessState { NEW, READY, RUNNING, WAITING, TERMINATED };
+  enum class ProcessState { NEW, READY, RUNNING, SLEEPING, TERMINATED };
 
   Process(const std::string &name, const std::string &created_at,
           int total_instructions, int quantum_cycles);
@@ -24,7 +24,6 @@ public:
   const int get_total_instructions() const;
   const int get_instruction_pointer() const;
   const ProcessState get_state() const;
-  const bool is_finished() const;
   const int is_quantum_expired() const;
   const std::vector<ProcessLog> &get_logs() const { return logs_; }
 
@@ -34,6 +33,7 @@ public:
   void set_state(ProcessState state);
   void set_quantum_remaining(int quantum_cycles);
   void decrement_quantum_remaining();
+  void decrement_sleep_ticks();
   void print_instructions() const;
 
 private:
@@ -48,4 +48,5 @@ private:
   ProcessState state_;
   int quantum_remaining_;
   std::vector<ProcessLog> logs_;
+  int sleep_ticks_;
 };

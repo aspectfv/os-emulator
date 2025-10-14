@@ -66,6 +66,9 @@ void Emulator::cycle(std::stop_token st) {
     // handle returned processes
     handle_returned_processes(returned_processes);
 
+    // handle sleeping processes
+    handle_sleeping_processes();
+
     // sleep to prevent process from terminating too fast
     std::this_thread::sleep_for(std::chrono::milliseconds(300));
     cpu_cycles_++;
@@ -159,10 +162,29 @@ void Emulator::handle_returned_processes(
 
         break;
       }
+      case Process::ProcessState::SLEEPING:
+        sleeping_processes_.push_back(returned_process);
+        break;
       default:
         break;
     }
   }
+}
+
+void Emulator::handle_sleeping_processes() {
+  auto it = std::remove_if(
+      sleeping_processes_.begin(), sleeping_processes_.end(),
+      [this](Process *process) {
+        process->decrement_sleep_ticks();
+        if (process->get_state() == Process::ProcessState::READY) {
+          scheduler_->add_process(process, true);
+          std::cout << "Process " << process->get_name()
+                    << " woke up and is now READY." << std::endl;
+          return true;
+        }
+        return false;
+      });
+  sleeping_processes_.erase(it, sleeping_processes_.end());
 }
 
 void Emulator::initialize() {
@@ -415,7 +437,7 @@ void Emulator::process_smi() {
               << std::endl;
   }
 
-  if (current_process_->is_finished()) {
+  if (current_process_->get_state() == Process::ProcessState::TERMINATED) {
     std::cout << "Finished!" << std::endl;
   } else {
     std::cout << "Current instruction line: "

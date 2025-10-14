@@ -17,6 +17,8 @@ void For::execute(InstructionContext context) {
 
     for (const auto &instr : instructions_) {
       cloned_instructions.push_back(instr->clone());
+      context.add_log("For loop iteration " + std::to_string(i + 1) +
+                      ": Instruction type " + typeid(*instr).name());
     }
 
     context.add_instructions(std::move(cloned_instructions));

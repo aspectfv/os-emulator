@@ -23,6 +23,7 @@ private:
   // process management
   std::unordered_map<std::string, std::unique_ptr<Process>> processes_;
   std::vector<Process *> terminated_processes_;
+  std::vector<Process *> sleeping_processes_;
   Process *current_process_ = nullptr;
 
   std::jthread cycle_thread_;
@@ -47,6 +48,7 @@ private:
   void generate_processes();
   void
   handle_returned_processes(const std::vector<Process *> &returned_processes);
+  void handle_sleeping_processes();
 
   // command handlers
   void initialize();
