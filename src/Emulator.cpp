@@ -182,8 +182,8 @@ void Emulator::initialize() {
   }
 
   std::string scheduler = config_.get_scheduler();
-  scheduler_ = SchedulerFactory::createScheduler(scheduler,
-                                                 config_.get_quantum_cycles());
+  scheduler_ = SchedulerFactory::create_scheduler(scheduler,
+                                                  config_.get_quantum_cycles());
 
   is_initialized_ = true;
 
