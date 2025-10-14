@@ -2,20 +2,20 @@
 #include "instructions/IInstruction.hpp"
 #include <cstdint>
 #include <string>
-#include <utility>
 #include <variant>
 
 class Arithmetic : public IInstruction {
 public:
-  Arithmetic(
-      const std::pair<std::string, uint16_t> &var1,
-      const std::variant<std::pair<std::string, uint16_t>, uint16_t> &var2,
-      const std::variant<std::pair<std::string, uint16_t>, uint16_t> &var3);
+  enum class Operator { ADD, SUB };
+  using Operand = std::variant<std::string, uint16_t>;
+
+  Arithmetic(const std::string &var1, const Operand &var2, const Operand &var3,
+             const Operator &op);
   void execute(InstructionContext context) override;
 
 private:
-  std::pair<std::string, uint16_t> var1_;
-  std::variant<std::pair<std::string, uint16_t>, uint16_t> var2_;
-  std::variant<std::pair<std::string, uint16_t>, uint16_t> var3_;
-  enum class Operator { ADD, SUB } operator_;
+  std::string var1_;
+  Operand var2_;
+  Operand var3_;
+  Operator operator_;
 };

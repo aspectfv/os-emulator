@@ -1,6 +1,6 @@
 #include "instructions/For.hpp"
 
-For::For(std::vector<IInstruction *> instructions, int repeats)
+For::For(const std::vector<IInstruction *> &instructions, int repeats)
     : instructions_(instructions), repeats_(repeats) {}
 
 void For::execute(InstructionContext context) {

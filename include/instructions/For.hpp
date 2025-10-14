@@ -3,7 +3,7 @@
 
 class For : public IInstruction {
 public:
-  For(std::vector<IInstruction *> instructions, int repeats);
+  For(const std::vector<IInstruction *> &instructions, int repeats);
   void execute(InstructionContext context) override;
 
 private:

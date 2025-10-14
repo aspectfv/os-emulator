@@ -15,8 +15,8 @@ struct InstructionContext {
   std::function<void(std::pair<std::string, uint16_t>)> add_variable =
       [](std::pair<std::string, uint16_t>) {};
 
-  std::function<void(std::vector<class IInstruction *>)> add_instructions =
-      [](std::vector<IInstruction *>) {};
+  std::function<void(const std::vector<class IInstruction *> &)>
+      add_instructions = [](std::vector<IInstruction *>) {};
 
   std::function<void(uint8_t)> sleep = [](uint8_t) {};
 };

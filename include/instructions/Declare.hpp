@@ -3,9 +3,10 @@
 
 class Declare : public IInstruction {
 public:
-  Declare(std::pair<std::string, uint16_t> variable);
+  using Variable = std::pair<std::string, uint16_t>;
+  Declare(const Variable &variable);
   void execute(InstructionContext context) override;
 
 private:
-  std::pair<std::string, uint16_t> variable_;
+  Variable variable_;
 };
