@@ -26,7 +26,6 @@ private:
   std::vector<Process *> sleeping_processes_;
   Process *current_process_ = nullptr;
 
-  std::jthread cycle_thread_;
   int cpu_cycles_ = 0;
 
   std::vector<CPUCore> cores_;
@@ -38,6 +37,7 @@ private:
   std::mutex mtx_;
   std::condition_variable cv_;
   bool cycle_finished_ = false;
+  std::jthread cycle_thread_;
 
   // cpu cycle loop
   void cycle(std::stop_token st);
