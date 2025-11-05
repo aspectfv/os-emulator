@@ -24,7 +24,7 @@ void Process::execute_current_instruction(int cpu_core_id) {
              },
          .add_variable =
              [this](std::pair<std::string, uint16_t> var) {
-               this->symbol_table_.insert(var);
+               this->symbol_table_[var.first] = var.second;
              },
          .add_instructions =
              [this](std::vector<std::unique_ptr<IInstruction>>
