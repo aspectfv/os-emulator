@@ -383,7 +383,12 @@ void Emulator::log_cpu_util_report(std::ostream &output_stream) {
   // output_stream << "CPU utilization: " << cpu_utilization << "%\n";
   output_stream << "CPU utilization: "
                 << (scheduler_->is_running() ? cpu_utilization : 0) << "%\n";
-  output_stream << "Cores used: " << busy_cores << "\n";
+
+  // output_stream << "Cores used: " << busy_cores << "\n";
+  //
+  output_stream << "Cores used: " << (scheduler_->is_running() ? busy_cores : 0)
+                << "\n";
+
   // output_stream << "Cores available: " << cores_.size() - busy_cores <<
   // "\n\n";
   output_stream << "Cores available: "
@@ -403,7 +408,7 @@ void Emulator::log_cpu_util_report(std::ostream &output_stream) {
            std::to_string(process->get_total_instructions()) + "\n";
   };
 
-  for (size_t i = 0; i < cores_.size(); ++i) {
+  /* for (size_t i = 0; i < cores_.size(); ++i) {
     if (!cores_[i].is_idle()) {
       const Process *running_process = cores_[i].get_current_process();
       if (!running_process)
@@ -412,6 +417,22 @@ void Emulator::log_cpu_util_report(std::ostream &output_stream) {
       any_running = true;
       output_stream << format_process_log(running_process, i);
     }
+  }
+  */
+
+  if (scheduler_->is_running()) {
+    for (size_t i = 0; i < cores_.size(); ++i) {
+      if (!cores_[i].is_idle()) {
+        const Process *running_process = cores_[i].get_current_process();
+        if (!running_process)
+          continue;
+
+        any_running = true;
+        output_stream << format_process_log(running_process, i);
+      }
+    }
+  } else {
+    output_stream << "No running processes.\n";
   }
 
   if (!any_running)
