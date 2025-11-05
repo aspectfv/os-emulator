@@ -431,8 +431,6 @@ void Emulator::log_cpu_util_report(std::ostream &output_stream) {
         output_stream << format_process_log(running_process, i);
       }
     }
-  } else {
-    output_stream << "No running processes.\n";
   }
 
   if (!any_running)
