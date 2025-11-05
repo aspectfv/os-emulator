@@ -1,5 +1,4 @@
 #include "Process.hpp"
-#include <iostream>
 
 // auto inc process id
 int Process::next_id_ = 0;
@@ -7,7 +6,9 @@ int Process::next_id_ = 0;
 Process::Process(const std::string &name, int total_instructions,
                  int quantum_cycles)
     : id_(next_id_++), name_(name), total_instructions_(total_instructions),
-      state_(ProcessState::NEW), quantum_remaining_(quantum_cycles) {}
+      state_(ProcessState::NEW), quantum_remaining_(quantum_cycles) {
+  symbol_table_["x"] = 0; // required for mo1 demo
+}
 
 void Process::execute_current_instruction(int cpu_core_id) {
   if (instruction_pointer_ < instructions_.size()) {

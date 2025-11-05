@@ -2,7 +2,7 @@
 #include "Process.hpp"
 #include "instructions/InstructionFactory.hpp"
 #include "schedulers/SchedulerFactory.hpp"
-#include <chrono>
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
@@ -69,7 +69,8 @@ void Emulator::cycle(std::stop_token st) {
     handle_sleeping_processes();
 
     // sleep to prevent process from terminating too fast for debugging
-    // std::this_thread::sleep_for(std::chrono::milliseconds(300)); // commented out in actual demo for accuracy purposes
+    // std::this_thread::sleep_for(std::chrono::milliseconds(300)); // commented
+    // out in actual demo for accuracy purposes
     cpu_cycles_++;
 
     // cycle finished -> notify waiting thread
@@ -122,10 +123,15 @@ void Emulator::generate_processes() {
         config_.get_min_ins() +
         (rand() % (config_.get_max_ins() - config_.get_min_ins() + 1));
 
+    /* std::vector<std::unique_ptr<IInstruction>> instructions =
+         InstructionFactory::create_instructions(process_name, num_instructions,
+                                                 config_.get_max_ins(),
+                                                 config_.get_min_ins());
+   */
+
     std::vector<std::unique_ptr<IInstruction>> instructions =
-        InstructionFactory::create_instructions(process_name, num_instructions,
-                                                config_.get_max_ins(),
-                                                config_.get_min_ins());
+        InstructionFactory::create_mo1_demo_instructions(process_name,
+                                                         num_instructions);
 
     std::unique_ptr<Process> process = std::make_unique<Process>(
         process_name, num_instructions, config_.get_quantum_cycles());
@@ -147,24 +153,24 @@ void Emulator::handle_returned_processes(
       continue;
 
     switch (returned_process->get_state()) {
-      case Process::ProcessState::TERMINATED:
-        terminated_processes_.push_back(returned_process);
-        break;
-      case Process::ProcessState::READY: {
-        scheduler_->add_process(returned_process);
+    case Process::ProcessState::TERMINATED:
+      terminated_processes_.push_back(returned_process);
+      break;
+    case Process::ProcessState::READY: {
+      scheduler_->add_process(returned_process);
 
-        if (scheduler_->has_processes()) {
-          Process *next_process = scheduler_->get_next_process();
-          cores_[i].set_current_process(next_process);
-        }
-
-        break;
+      if (scheduler_->has_processes()) {
+        Process *next_process = scheduler_->get_next_process();
+        cores_[i].set_current_process(next_process);
       }
-      case Process::ProcessState::SLEEPING:
-        sleeping_processes_.push_back(returned_process);
-        break;
-      default:
-        break;
+
+      break;
+    }
+    case Process::ProcessState::SLEEPING:
+      sleeping_processes_.push_back(returned_process);
+      break;
+    default:
+      break;
     }
   }
 }
@@ -255,10 +261,15 @@ void Emulator::start_screen(std::vector<std::string> &args) {
         config_.get_min_ins() +
         (rand() % (config_.get_max_ins() - config_.get_min_ins() + 1));
 
-    std::vector<std::unique_ptr<IInstruction>> instructions =
+    /* std::vector<std::unique_ptr<IInstruction>> instructions =
         InstructionFactory::create_instructions(process_name, num_instructions,
                                                 config_.get_max_ins(),
                                                 config_.get_min_ins());
+    */
+
+    std::vector<std::unique_ptr<IInstruction>> instructions =
+        InstructionFactory::create_mo1_demo_instructions(process_name,
+                                                         num_instructions);
 
     std::unique_ptr<Process> new_process = std::make_unique<Process>(
         process_name, num_instructions, config_.get_quantum_cycles());

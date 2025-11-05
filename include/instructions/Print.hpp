@@ -9,4 +9,7 @@ public:
 
 private:
   std::string message_;
+  std::string var_name_;
+  std::string prefix_;
+  std::string suffix_;
 };

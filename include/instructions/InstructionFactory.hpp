@@ -5,8 +5,6 @@
 #include "instructions/IInstruction.hpp"
 #include "instructions/Print.hpp"
 #include "instructions/Sleep.hpp"
-#include <cstdlib>
-#include <ctime>
 #include <memory>
 #include <string>
 #include <vector>
@@ -18,6 +16,9 @@ public:
   create_instructions(const std::string &process_name, int num_instructions,
                       int max_ins, int min_ins, int start_depth = 0,
                       int max_depth = 3);
+  static std::vector<std::unique_ptr<IInstruction>>
+  create_mo1_demo_instructions(const std::string &process_name,
+                               int num_instructions);
 
 private:
   static std::unique_ptr<Print> create_print(const std::string &msg);
