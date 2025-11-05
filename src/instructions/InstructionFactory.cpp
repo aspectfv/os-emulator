@@ -1,8 +1,5 @@
 #include "instructions/InstructionFactory.hpp"
-#include "instructions/Arithmetic.hpp"
-#include "instructions/Declare.hpp"
-#include "instructions/Print.hpp"
-#include "instructions/Sleep.hpp"
+#include <limits>
 
 std::vector<std::unique_ptr<IInstruction>>
 InstructionFactory::create_instructions(const std::string &process_name,

@@ -1,5 +1,6 @@
 #include "instructions/Arithmetic.hpp"
 #include <algorithm>
+#include <limits>
 
 Arithmetic::Arithmetic(const std::string &var1, const Operand &var2,
                        const Operand &var3, const Operator &op)

@@ -1,4 +1,6 @@
 #include "instructions/For.hpp"
+#include <algorithm>
+#include <cctype>
 
 For::For(std::vector<std::unique_ptr<IInstruction>> instructions, int repeats)
     : instructions_(std::move(instructions)), repeats_(repeats) {}

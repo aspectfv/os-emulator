@@ -8,6 +8,7 @@
 #include <string>
 #include <thread>
 #include <unordered_map>
+#include <condition_variable>
 #include <vector>
 
 class Emulator {
