@@ -382,7 +382,7 @@ void Emulator::log_cpu_util_report(std::ostream &output_stream) {
 
   output_stream << "CPU utilization: " << cpu_utilization << "%\n";
   output_stream << "Cores used: " << busy_cores << "\n";
-  output_stream << "Cores available: " << cores_.size() << "\n\n";
+  output_stream << "Cores available: " << cores_.size() - busy_cores << "\n\n";
   output_stream << "----------------------------------------\n";
   output_stream << "Running processes:\n";
 
