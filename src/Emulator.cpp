@@ -418,7 +418,20 @@ void Emulator::log_cpu_util_report(std::ostream &output_stream) {
   if (terminated_processes_.empty()) {
     output_stream << "No finished processes.\n";
   } else {
-    for (const auto &finished_process : terminated_processes_) {
+
+    /* for (const auto &finished_process : terminated_processes_) {
+      output_stream << format_process_log(finished_process, -1);
+    }
+    */
+
+    // used to limit log output to first 100 entries to avoid bloating the
+    // file/screen
+    int loop_count = terminated_processes_.size() <= 100
+                         ? terminated_processes_.size()
+                         : 100;
+
+    for (int i = 0; i < loop_count; ++i) {
+      const auto &finished_process = terminated_processes_[i];
       output_stream << format_process_log(finished_process, -1);
     }
   }
@@ -437,7 +450,20 @@ void Emulator::process_smi() {
   std::cout << "ID: " << current_process_->get_id() << std::endl;
   std::cout << "Logs: " << std::endl;
 
-  for (const ProcessLog &log : current_process_->get_logs()) {
+  /* for (const ProcessLog &log : current_process_->get_logs()) {
+    std::cout << "(" << log.timestamp << ") "
+              << "Core " << log.core_id << ": " << "\"" << log.message << "\""
+              << std::endl;
+  }
+  */
+
+  // used to limit log output to first 100 entries to avoid bloating the screen
+  int loop_count = current_process_->get_logs().size() <= 100
+                       ? current_process_->get_logs().size()
+                       : 100;
+
+  for (int i = 0; i < loop_count; ++i) {
+    const ProcessLog &log = current_process_->get_logs()[i];
     std::cout << "(" << log.timestamp << ") "
               << "Core " << log.core_id << ": " << "\"" << log.message << "\""
               << std::endl;
