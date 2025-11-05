@@ -380,9 +380,15 @@ void Emulator::log_cpu_util_report(std::ostream &output_stream) {
 
   int cpu_utilization = cores_.empty() ? 0 : (busy_cores * 100) / cores_.size();
 
-  output_stream << "CPU utilization: " << cpu_utilization << "%\n";
+  // output_stream << "CPU utilization: " << cpu_utilization << "%\n";
+  output_stream << "CPU utilization: "
+                << (scheduler_->is_running() ? cpu_utilization : 0) << "%\n";
   output_stream << "Cores used: " << busy_cores << "\n";
-  output_stream << "Cores available: " << cores_.size() - busy_cores << "\n\n";
+  // output_stream << "Cores available: " << cores_.size() - busy_cores <<
+  // "\n\n";
+  output_stream << "Cores available: "
+                << (scheduler_->is_running() ? cores_.size() - busy_cores : 0)
+                << "\n\n";
   output_stream << "----------------------------------------\n";
   output_stream << "Running processes:\n";
 
