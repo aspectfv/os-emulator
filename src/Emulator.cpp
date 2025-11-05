@@ -68,8 +68,8 @@ void Emulator::cycle(std::stop_token st) {
     // handle sleeping processes
     handle_sleeping_processes();
 
-    // sleep to prevent process from terminating too fast
-    std::this_thread::sleep_for(std::chrono::milliseconds(300));
+    // sleep to prevent process from terminating too fast for debugging
+    // std::this_thread::sleep_for(std::chrono::milliseconds(300)); // commented out in actual demo for accuracy purposes
     cpu_cycles_++;
 
     // cycle finished -> notify waiting thread
