@@ -53,7 +53,7 @@ InstructionFactory::create_instructions(const std::string &process_name,
         ++curr_instructions_count;
         break;
       case InstructionFactory::InstructionType::SLEEP: {
-        uint8_t ticks = 1 + rand() % 5; // sleep between 1 and 5 ticks
+        uint8_t ticks = 1 + rand() % 2; // sleep between 1 and 2 ticks
 
         instructions.push_back(InstructionFactory::create_sleep(ticks));
 
