@@ -12,6 +12,12 @@ struct ProcessLog {
   std::string message;
 };
 
+struct PageTableEntry {
+  bool valid_bit = false;
+  bool dirty_bit = false;
+  int frame_number = -1;
+};
+
 class Process {
 public:
   enum class ProcessState { NEW, READY, RUNNING, SLEEPING, TERMINATED };
@@ -48,4 +54,7 @@ private:
   int quantum_remaining_;
   std::vector<ProcessLog> logs_;
   int sleep_ticks_;
+
+  // page table for memory management
+  std::vector<PageTableEntry> page_table_;
 };
