@@ -67,6 +67,27 @@ const int Process::is_quantum_expired() const {
   return quantum_remaining_ <= 0;
 }
 
+const int Process::get_page_table_size() const { return page_table_.size(); }
+
+const PageTableEntry &
+Process::get_page_table_entry(int virtual_page_number) const {
+  return page_table_.at(virtual_page_number);
+}
+
+PageTableEntry &Process::get_page_table_entry(int virtual_page_number) {
+  return page_table_.at(virtual_page_number);
+}
+
+const uint32_t Process::get_total_memory_size() const {
+  return total_memory_size_;
+}
+
+const uint32_t Process::get_backing_store_offset() const {
+  return backing_store_offset_;
+}
+
+const bool Process::get_access_violation() const { return access_violation_; }
+
 void Process::increment_instruction_pointer() {
   if (instruction_pointer_ < instructions_.size())
     instruction_pointer_++;
@@ -94,4 +115,15 @@ void Process::decrement_sleep_ticks() {
     sleep_ticks_--;
   else
     state_ = ProcessState::READY;
+}
+
+void Process::set_total_memory_size(uint32_t size) {
+  total_memory_size_ = size;
+}
+
+void Process::set_backing_store_offset(uint32_t offset) {
+  backing_store_offset_ = offset;
+}
+void Process::set_access_violation(bool violation) {
+  access_violation_ = violation;
 }

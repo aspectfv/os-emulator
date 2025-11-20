@@ -32,6 +32,12 @@ public:
   const ProcessState get_state() const;
   const int is_quantum_expired() const;
   const std::vector<ProcessLog> &get_logs() const { return logs_; }
+  const int get_page_table_size() const;
+  const PageTableEntry &get_page_table_entry(int virtual_page_number) const;
+  PageTableEntry &get_page_table_entry(int virtual_page_number);
+  const uint32_t get_total_memory_size() const;
+  const uint32_t get_backing_store_offset() const;
+  const bool get_access_violation() const;
 
   void increment_instruction_pointer();
   void
@@ -40,6 +46,9 @@ public:
   void set_quantum_remaining(int quantum_cycles);
   void decrement_quantum_remaining();
   void decrement_sleep_ticks();
+  void set_total_memory_size(uint32_t size);
+  void set_backing_store_offset(uint32_t offset);
+  void set_access_violation(bool violation);
 
 private:
   static int next_id_;
@@ -48,6 +57,7 @@ private:
   std::string created_at_ = Utils::current_timestamp();
   std::vector<std::unique_ptr<IInstruction>> instructions_;
   std::unordered_map<std::string, uint16_t> symbol_table_;
+  uint32_t next_symbol_address_ = 0x40; // start at 64 bytes
   int total_instructions_;
   int instruction_pointer_ = 0;
   ProcessState state_;
@@ -57,4 +67,9 @@ private:
 
   // page table for memory management
   std::vector<PageTableEntry> page_table_;
+
+  uint32_t total_memory_size_ = 0;
+  uint32_t backing_store_offset_ = 0;
+
+  bool access_violation_ = false;
 };
