@@ -353,6 +353,11 @@ void Emulator::custom_screen(std::vector<std::string> &args) {
   std::vector<std::unique_ptr<IInstruction>> instructions =
       InstructionFactory::create_instructions_from_string(instructions_str);
 
+  if (instructions.empty() || instructions.size() > 50) {
+    throw std::runtime_error(
+        "Custom process must have between 1 and 50 instructions.");
+  }
+
   std::unique_ptr<Process> process = std::make_unique<Process>(
       process_name, static_cast<int>(instructions.size()),
       config_.get_quantum_cycles());
