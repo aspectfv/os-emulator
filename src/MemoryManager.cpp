@@ -130,8 +130,81 @@ bool MemoryManager::is_process_registered(int process_id) const {
   return processes_.find(process_id) != processes_.end();
 }
 
+uint32_t MemoryManager::get_total_memory_size() const {
+  std::lock_guard<std::mutex> lock(memory_mutex_);
+  return static_cast<uint32_t>(physical_memory_.size());
+}
+
+uint32_t MemoryManager::get_used_memory_size() const {
+  std::lock_guard<std::mutex> lock(memory_mutex_);
+
+  uint32_t used_frames = 0;
+
+  for (const auto &frame_entry : frame_table_) {
+    if (frame_entry.is_allocated) {
+      used_frames++;
+    }
+  }
+
+  return used_frames * mem_per_frame_;
+}
+
+uint32_t MemoryManager::get_free_memory_size() const {
+  std::lock_guard<std::mutex> lock(memory_mutex_);
+  return get_total_memory_size() - get_used_memory_size();
+}
+
+uint32_t MemoryManager::get_total_memory_usage() const {
+  std::lock_guard<std::mutex> lock(memory_mutex_);
+  return static_cast<uint32_t>(total_memory_usage_);
+}
+
+uint32_t MemoryManager::get_free_frames_size() const {
+  std::lock_guard<std::mutex> lock(memory_mutex_);
+  return static_cast<uint32_t>(free_frame_list_.size());
+}
+
+uint32_t MemoryManager::get_process_memory_usage(int process_id) const {
+  std::lock_guard<std::mutex> lock(memory_mutex_);
+
+  uint32_t used_frames = 0;
+
+  for (const auto &frame_entry : frame_table_) {
+    if (frame_entry.is_allocated &&
+        frame_entry.owner_process_id == process_id) {
+      used_frames++;
+    }
+  }
+
+  return used_frames * mem_per_frame_;
+}
+
+std::unordered_map<int, uint32_t>
+MemoryManager::get_all_processes_memory_usage() const {
+  std::lock_guard<std::mutex> lock(memory_mutex_);
+
+  std::unordered_map<int, uint32_t> memory_usage_map;
+
+  for (const auto &frame_entry : frame_table_) {
+    if (frame_entry.is_allocated) {
+      memory_usage_map[frame_entry.owner_process_id] += mem_per_frame_;
+    }
+  }
+
+  return memory_usage_map;
+}
+
+uint64_t MemoryManager::get_paged_in_count() const {
+  std::lock_guard<std::mutex> lock(memory_mutex_);
+  return paged_in_count_;
+}
+
+uint64_t MemoryManager::get_paged_out_count() const {
+  std::lock_guard<std::mutex> lock(memory_mutex_);
+  return paged_out_count_;
+}
+
 void MemoryManager::page_fault(Process *process, uint32_t virtual_page_number) {
-  // Page fault handling logic goes here
   int frame_number;
 
   if (!free_frame_list_.empty()) {

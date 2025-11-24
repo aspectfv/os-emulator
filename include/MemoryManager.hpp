@@ -31,6 +31,17 @@ public:
   void remove_process(int process_id);
   bool is_process_registered(int process_id) const;
 
+  // stats
+  uint32_t get_total_memory_size() const;
+  uint32_t get_used_memory_size() const;
+  uint32_t get_free_memory_size() const;
+  uint32_t get_total_memory_usage() const;
+  uint32_t get_free_frames_size() const;
+  uint32_t get_process_memory_usage(int process_id) const;
+  std::unordered_map<int, uint32_t> get_all_processes_memory_usage() const;
+  uint64_t get_paged_in_count() const;
+  uint64_t get_paged_out_count() const;
+
 private:
   mutable std::mutex memory_mutex_;
 
