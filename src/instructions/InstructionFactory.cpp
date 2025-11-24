@@ -118,6 +118,11 @@ InstructionFactory::create_mo1_demo_instructions(
   return instructions;
 }
 
+std::vector<std::unique_ptr<IInstruction>>
+InstructionFactory::create_instructions_from_string(const std::string &code) {
+  //
+}
+
 std::unique_ptr<Print>
 InstructionFactory::create_print(const std::string &msg) {
   return std::make_unique<Print>(msg);
@@ -162,4 +167,19 @@ Arithmetic::Operand InstructionFactory::random_operand() {
   default:
     return Arithmetic::Operand(uint16_t(0));
   }
+}
+
+static std::string trim(const std::string &str) {
+  size_t first = str.find_first_not_of(" \t\n\r");
+  if (std::string::npos == first)
+    return "";
+  size_t last = str.find_last_not_of(" \t\n\r");
+  return str.substr(first, (last - first + 1));
+}
+
+static uint32_t parse_addr_val(const std::string &str) {
+  if (str.find("0x") == 0 || str.find("0X") == 0) {
+    return std::stoul(str, nullptr, 16);
+  }
+  return std::stoul(str);
 }

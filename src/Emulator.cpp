@@ -249,6 +249,10 @@ void Emulator::screen(const std::vector<std::string> &args) {
     resume_screen(const_cast<std::vector<std::string> &>(args));
     return;
   }
+
+  if (arg == "-c") {
+    custom_screen(const_cast<std::vector<std::string> &>(args));
+  }
 }
 
 void Emulator::start_screen(std::vector<std::string> &args) {
@@ -330,6 +334,21 @@ void Emulator::resume_screen(std::vector<std::string> &args) {
   current_process_ = it->second.get();
 
   std::cout << "\033[2J\033[1;1H";
+}
+
+void Emulator::custom_screen(std::vector<std::string> &args) {
+  if (args.size() < 2)
+    throw std::runtime_error("No process name provided for -c command.");
+
+  std::string process_name = args[1];
+  uint32_t memory_size = std::stoul(args[2]);
+  std::string instructions = args[3];
+
+  if (processes_.find(process_name) != processes_.end()) {
+    std::string error_msg = "Process " + process_name + " already exists.";
+    throw std::runtime_error(error_msg);
+    return;
+  }
 }
 
 void Emulator::scheduler_start() {

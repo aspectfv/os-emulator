@@ -69,6 +69,7 @@ private:
   void start_screen(std::vector<std::string> &args);
   void list_screens();
   void resume_screen(std::vector<std::string> &args);
+  void custom_screen(std::vector<std::string> &args);
 
   void scheduler_start();
   void scheduler_stop();

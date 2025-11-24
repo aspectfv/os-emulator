@@ -19,6 +19,8 @@ public:
   static std::vector<std::unique_ptr<IInstruction>>
   create_mo1_demo_instructions(const std::string &process_name,
                                int num_instructions);
+  static std::vector<std::unique_ptr<IInstruction>>
+  create_instructions_from_string(const std::string &code);
 
 private:
   static std::unique_ptr<Print> create_print(const std::string &msg);
@@ -34,4 +36,6 @@ private:
 
   // helpers
   static Arithmetic::Operand random_operand();
+  static std::string trim(const std::string &str);
+  static uint32_t parse_addr_val(const std::string &str);
 };
