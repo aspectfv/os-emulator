@@ -89,6 +89,47 @@ MemoryAccessResult MemoryManager::write(uint32_t virtual_address,
   return MemoryAccessResult::SUCCESS;
 }
 
+void MemoryManager::register_process(Process *process, uint32_t size,
+                                     uint32_t mem_per_frame) {
+  std::lock_guard<std::mutex> lock(memory_mutex_);
+
+  process->set_total_memory_size(size);
+  process->set_backing_store_offset(next_backing_store_pos);
+
+  uint32_t num_pages =
+      (size + mem_per_frame - 1) / mem_per_frame; // ceiling division
+
+  uint32_t actual_memory_allocated = num_pages * mem_per_frame;
+  total_memory_usage_ += actual_memory_allocated;
+
+  processes_[process->get_id()] = process;
+}
+
+void MemoryManager::remove_process(int process_id) {
+  std::lock_guard<std::mutex> lock(memory_mutex_);
+
+  for (auto &frame_entry : frame_table_) {
+    if (frame_entry.is_allocated &&
+        frame_entry.owner_process_id == process_id) {
+      frame_entry.is_allocated = false;
+      frame_entry.owner_process_id = -1;
+      frame_entry.virtual_page_number = -1;
+
+      free_frame_list_.push(&frame_entry - &frame_table_[0]); // frame index
+    }
+  }
+
+  auto it = processes_.find(process_id);
+  if (it != processes_.end()) {
+    processes_.erase(it);
+  }
+}
+
+bool MemoryManager::is_process_registered(int process_id) const {
+  std::lock_guard<std::mutex> lock(memory_mutex_);
+  return processes_.find(process_id) != processes_.end();
+}
+
 void MemoryManager::page_fault(Process *process, uint32_t virtual_page_number) {
   // Page fault handling logic goes here
   int frame_number;

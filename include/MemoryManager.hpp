@@ -25,8 +25,14 @@ public:
   MemoryAccessResult write(uint32_t virtual_address, Process *process,
                            uint16_t value);
 
+  void register_process(Process *process, uint32_t size,
+                        uint32_t mem_per_frame);
+
+  void remove_process(int process_id);
+  bool is_process_registered(int process_id) const;
+
 private:
-  std::mutex memory_mutex_;
+  mutable std::mutex memory_mutex_;
 
   std::vector<char> physical_memory_;
   std::vector<FrameTableEntry> frame_table_;
