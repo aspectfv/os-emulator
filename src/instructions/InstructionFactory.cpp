@@ -1,5 +1,7 @@
 #include "instructions/InstructionFactory.hpp"
+#include <iostream>
 #include <limits>
+#include <sstream>
 
 std::vector<std::unique_ptr<IInstruction>>
 InstructionFactory::create_instructions(const std::string &process_name,
@@ -120,7 +122,84 @@ InstructionFactory::create_mo1_demo_instructions(
 
 std::vector<std::unique_ptr<IInstruction>>
 InstructionFactory::create_instructions_from_string(const std::string &code) {
-  //
+  // Mapper
+  const std::unordered_map<std::string, InstructionType> command_mapper = {
+      {"DECLARE", InstructionType::DECLARE},
+      {"ADD", InstructionType::ADD},
+      {"SUBTRACT", InstructionType::SUBTRACT},
+      {"PRINT", InstructionType::PRINT},
+      {"WRITE", InstructionType::WRITE},
+      {"READ", InstructionType::READ}};
+
+  std::vector<std::unique_ptr<IInstruction>> instructions;
+  std::stringstream ss(code);
+  std::string instruction_segment;
+
+  // Split by semicolon
+  while (std::getline(ss, instruction_segment, ';')) {
+    instruction_segment = trim(instruction_segment);
+    if (instruction_segment.empty())
+      continue;
+
+    // Use stringstream to extract command keyword
+    std::stringstream line_ss(instruction_segment);
+    std::string command_str;
+    line_ss >> command_str;
+
+    // Map to enum
+    auto it = command_mapper.find(command_str);
+    InstructionType command_type =
+        (it != command_mapper.end()) ? it->second : InstructionType::UNKNOWN;
+
+    switch (command_type) {
+    case InstructionType::PRINT: {
+      // Find content inside parenthesis: PRINT("Result: " + varC)
+      size_t open_paren = instruction_segment.find('(');
+      size_t close_paren = instruction_segment.find_last_of(')');
+
+      if (open_paren != std::string::npos && close_paren != std::string::npos &&
+          close_paren > open_paren) {
+        std::string content = instruction_segment.substr(
+            open_paren + 1, close_paren - open_paren - 1);
+        instructions.push_back(create_print(content));
+      }
+      break;
+    }
+    case InstructionType::DECLARE: {
+      std::string var_name;
+      uint16_t value = 0;
+      if (line_ss >> var_name >> value) {
+        instructions.push_back(create_declare(var_name, value));
+      }
+      break;
+    }
+    case InstructionType::ADD:
+    case InstructionType::SUBTRACT: {
+      std::string dest, op1_str, op2_str;
+      if (line_ss >> dest >> op1_str >> op2_str) {
+        Arithmetic::Operator op = (command_type == InstructionType::ADD)
+                                      ? Arithmetic::Operator::ADD
+                                      : Arithmetic::Operator::SUBTRACT;
+        instructions.push_back(create_arithmetic(dest, parse_operand(op1_str),
+                                                 parse_operand(op2_str), op));
+      }
+      break;
+    }
+    case InstructionType::WRITE:
+    case InstructionType::READ: {
+      // Intentionally skipped for now as per requirements
+      break;
+    }
+    case InstructionType::UNKNOWN:
+    default: {
+      std::cerr << "Warning: Unknown instruction command '" << command_str
+                << "' in: " << instruction_segment << std::endl;
+      break;
+    }
+    }
+  }
+
+  return instructions;
 }
 
 std::unique_ptr<Print>
@@ -169,7 +248,7 @@ Arithmetic::Operand InstructionFactory::random_operand() {
   }
 }
 
-static std::string trim(const std::string &str) {
+std::string InstructionFactory::trim(const std::string &str) {
   size_t first = str.find_first_not_of(" \t\n\r");
   if (std::string::npos == first)
     return "";
@@ -177,9 +256,25 @@ static std::string trim(const std::string &str) {
   return str.substr(first, (last - first + 1));
 }
 
-static uint32_t parse_addr_val(const std::string &str) {
+uint32_t InstructionFactory::parse_addr_val(const std::string &str) {
   if (str.find("0x") == 0 || str.find("0X") == 0) {
     return std::stoul(str, nullptr, 16);
   }
   return std::stoul(str);
+}
+
+Arithmetic::Operand
+InstructionFactory::parse_operand(const std::string &token) {
+  if (token.empty())
+    return uint16_t(0);
+  // Check if the token is a number
+  if (std::isdigit(token[0])) {
+    try {
+      return static_cast<uint16_t>(std::stoul(token));
+    } catch (...) {
+      return uint16_t(0);
+    }
+  }
+  // Otherwise treat as variable name
+  return token;
 }

@@ -11,7 +11,17 @@
 
 class InstructionFactory {
 public:
-  enum class InstructionType { PRINT, DECLARE, ADD, SUBTRACT, SLEEP, FOR };
+  enum class InstructionType {
+    PRINT,
+    DECLARE,
+    ADD,
+    SUBTRACT,
+    SLEEP,
+    FOR,
+    READ,
+    WRITE,
+    UNKNOWN
+  };
   static std::vector<std::unique_ptr<IInstruction>>
   create_instructions(const std::string &process_name, int num_instructions,
                       int max_ins, int min_ins, int start_depth = 0,
@@ -38,4 +48,5 @@ private:
   static Arithmetic::Operand random_operand();
   static std::string trim(const std::string &str);
   static uint32_t parse_addr_val(const std::string &str);
+  static Arithmetic::Operand parse_operand(const std::string &str);
 };
