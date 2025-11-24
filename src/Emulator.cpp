@@ -342,13 +342,30 @@ void Emulator::custom_screen(std::vector<std::string> &args) {
 
   std::string process_name = args[1];
   uint32_t memory_size = std::stoul(args[2]);
-  std::string instructions = args[3];
+  std::string instructions_str = args[3];
 
   if (processes_.find(process_name) != processes_.end()) {
     std::string error_msg = "Process " + process_name + " already exists.";
     throw std::runtime_error(error_msg);
     return;
   }
+
+  std::vector<std::unique_ptr<IInstruction>> instructions =
+      InstructionFactory::create_instructions_from_string(instructions_str);
+
+  std::unique_ptr<Process> process = std::make_unique<Process>(
+      process_name, static_cast<int>(instructions.size()),
+      config_.get_quantum_cycles());
+
+  process->set_instructions(std::move(instructions));
+
+  if (memory_manager_) {
+    memory_manager_->register_process(process.get(), memory_size,
+                                      config_.get_mem_per_frame());
+  }
+
+  processes_[process_name] = std::move(process);
+  scheduler_->add_process(processes_[process_name].get());
 }
 
 void Emulator::scheduler_start() {
