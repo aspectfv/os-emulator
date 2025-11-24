@@ -527,4 +527,23 @@ void Emulator::vmstat() {
 
   if (!memory_manager_)
     throw std::runtime_error("Memory manager not initialized.");
+
+  // memory stats
+  uint32_t total_mem_size = memory_manager_->get_total_memory_size();
+  uint32_t used_mem_size = memory_manager_->get_used_memory_size();
+  uint32_t free_mem_size = memory_manager_->get_free_memory_size();
+
+  // paging stats
+  uint64_t paged_in_count = memory_manager_->get_paged_in_count();
+  uint64_t paged_out_count = memory_manager_->get_paged_out_count();
+
+  // display vmstat output
+  std::cout << "Total Memory: " << total_mem_size << " bytes" << std::endl;
+  std::cout << "Used Memory: " << used_mem_size << " bytes" << std::endl;
+  std::cout << "Free Memory: " << free_mem_size << " bytes" << std::endl;
+  std::cout << "Idle CPU Ticks: " << idle_cpu_ticks_ << std::endl;
+  std::cout << "Active CPU Ticks: " << active_cpu_ticks_ << std::endl;
+  std::cout << "Total CPU Ticks: " << total_cpu_ticks_ << std::endl;
+  std::cout << "Num paged in: " << paged_in_count << std::endl;
+  std::cout << "Num paged out: " << paged_out_count << std::endl;
 }
