@@ -252,7 +252,11 @@ void Emulator::start_screen(std::vector<std::string> &args) {
   if (args.size() < 2)
     throw std::runtime_error("No process name provided for -s command.");
 
+  if (args.size() < 3)
+    throw std::runtime_error("No process memory size provided for -s command.");
+
   std::string process_name = args[1];
+  uint32_t memory_size = std::stoul(args[2]);
 
   auto [it, inserted] = processes_.try_emplace(process_name, nullptr);
 
@@ -284,6 +288,11 @@ void Emulator::start_screen(std::vector<std::string> &args) {
   process->set_state(Process::ProcessState::READY);
 
   current_process_ = processes_[process_name].get();
+
+  if (memory_manager_) {
+    memory_manager_->register_process(current_process_, memory_size,
+                                      config_.get_mem_per_frame());
+  }
 
   scheduler_->add_process(current_process_);
 

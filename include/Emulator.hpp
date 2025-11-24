@@ -2,13 +2,14 @@
 #include "CPUCore.hpp"
 #include "CommandParser.hpp"
 #include "Config.hpp"
+#include "MemoryManager.hpp"
 #include "Process.hpp"
 #include "schedulers/IScheduler.hpp"
+#include <condition_variable>
 #include <memory>
 #include <string>
 #include <thread>
 #include <unordered_map>
-#include <condition_variable>
 #include <vector>
 
 class Emulator {
@@ -39,6 +40,13 @@ private:
   std::condition_variable cv_;
   bool cycle_finished_ = false;
   std::jthread cycle_thread_;
+
+  std::unique_ptr<MemoryManager> memory_manager_;
+
+  // cpu stats
+  uint64_t total_cpu_ticks_ = 0;
+  uint64_t idle_cpu_ticks_ = 0;
+  uint64_t active_cpu_ticks_ = 0;
 
   // cpu cycle loop
   void cycle(std::stop_token st);

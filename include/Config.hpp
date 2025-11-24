@@ -1,7 +1,7 @@
 #pragma once
 
-#include <string>
 #include <cstdint>
+#include <string>
 
 class Config {
 public:
@@ -17,6 +17,11 @@ public:
   uint32_t get_min_ins() const;
   uint32_t get_max_ins() const;
   uint32_t get_delay_per_exec() const;
+
+  uint32_t get_max_overall_mem() const;
+  uint32_t get_mem_per_frame() const;
+  uint32_t get_min_mem_per_proc() const;
+  uint32_t get_max_mem_per_proc() const;
 
 private:
   Config();
@@ -35,4 +40,9 @@ private:
   uint32_t min_ins_;
   uint32_t max_ins_;
   uint32_t delay_per_exec_;
+
+  uint32_t max_overall_mem_;
+  uint32_t mem_per_frame_;
+  uint32_t min_mem_per_proc_;
+  uint32_t max_mem_per_proc_;
 };

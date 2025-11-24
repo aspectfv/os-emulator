@@ -12,6 +12,11 @@ Config::Config() {
   min_ins_ = 1000;
   max_ins_ = 2000;
   delay_per_exec_ = 0;
+
+  max_overall_mem_ = 16384; // 2^14
+  mem_per_frame_ = 256;     // 2^8
+  min_mem_per_proc_ = 512;  // 2^9
+  max_mem_per_proc_ = 2048; // 2^11
 }
 
 bool Config::load(const std::string &filename) {
@@ -128,6 +133,14 @@ bool Config::load(const std::string &filename) {
       }
 
       delay_per_exec_ = static_cast<uint32_t>(val_ul);
+    } else if (key == "max-overall-mem") {
+      max_overall_mem_ = static_cast<uint32_t>(std::stoul(val));
+    } else if (key == "mem-per-frame") {
+      mem_per_frame_ = static_cast<uint32_t>(std::stoul(val));
+    } else if (key == "min-mem-per-proc") {
+      min_mem_per_proc_ = static_cast<uint32_t>(std::stoul(val));
+    } else if (key == "max-mem-per-proc") {
+      max_mem_per_proc_ = static_cast<uint32_t>(std::stoul(val));
     } else {
       std::cerr << "Unknown config key: " << key << std::endl;
     }
@@ -146,3 +159,8 @@ uint32_t Config::get_batch_process_freq() const { return batch_process_freq_; }
 uint32_t Config::get_min_ins() const { return min_ins_; }
 uint32_t Config::get_max_ins() const { return max_ins_; }
 uint32_t Config::get_delay_per_exec() const { return delay_per_exec_; }
+
+uint32_t Config::get_max_overall_mem() const { return max_overall_mem_; }
+uint32_t Config::get_mem_per_frame() const { return mem_per_frame_; }
+uint32_t Config::get_min_mem_per_proc() const { return min_mem_per_proc_; }
+uint32_t Config::get_max_mem_per_proc() const { return max_mem_per_proc_; }
