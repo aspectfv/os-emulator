@@ -79,4 +79,5 @@ private:
 
   // screen command handlers
   void process_smi();
+  void vmstat();
 };

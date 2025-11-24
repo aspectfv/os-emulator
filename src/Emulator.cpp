@@ -207,8 +207,11 @@ void Emulator::initialize() {
   scheduler_ = SchedulerFactory::create_scheduler(scheduler,
                                                   config_.get_quantum_cycles());
 
-  is_initialized_ = true;
+  memory_manager_ = std::make_unique<MemoryManager>(
+      config_.get_max_overall_mem(), config_.get_mem_per_frame(),
+      "csopesy-backing-store.txt");
 
+  is_initialized_ = true;
   cycle_thread_ = std::jthread([this](std::stop_token st) { cycle(st); });
 }
 
@@ -512,4 +515,16 @@ void Emulator::process_smi() {
     std::cout << "Lines of code: " << current_process_->get_total_instructions()
               << std::endl;
   }
+}
+
+void Emulator::vmstat() {
+  // wait for cpu cycle to finish for accurate report
+  {
+    std::unique_lock<std::mutex> lock(mtx_);
+    cv_.wait(lock, [this] { return cycle_finished_; });
+    cycle_finished_ = false;
+  }
+
+  if (!memory_manager_)
+    throw std::runtime_error("Memory manager not initialized.");
 }
