@@ -38,7 +38,7 @@ MemoryAccessResult MemoryManager::read(uint32_t virtual_address,
 
   // if valid bit is false, it is a page fault
   if (page_table_entry.valid_bit == false) {
-    page_fault_(process, virtual_page_number);
+    page_fault(process, virtual_page_number);
     paged_in_count_++;
   }
 
@@ -72,7 +72,7 @@ MemoryAccessResult MemoryManager::write(uint32_t virtual_address,
       process->get_page_table_entry(virtual_page_number);
 
   if (page_table_entry.valid_bit == false) {
-    page_fault_(process, virtual_page_number);
+    page_fault(process, virtual_page_number);
     paged_in_count_++;
   }
 
@@ -89,8 +89,7 @@ MemoryAccessResult MemoryManager::write(uint32_t virtual_address,
   return MemoryAccessResult::SUCCESS;
 }
 
-void MemoryManager::page_fault_(Process *process,
-                                uint32_t virtual_page_number) {
+void MemoryManager::page_fault(Process *process, uint32_t virtual_page_number) {
   // Page fault handling logic goes here
   int frame_number;
 
@@ -100,7 +99,7 @@ void MemoryManager::page_fault_(Process *process,
     free_frame_list_.pop();
   } else {
     // get victim frame with FIFO
-    frame_number = get_victim_frame_();
+    frame_number = get_victim_frame();
   }
 
   // allocate frame
@@ -109,7 +108,7 @@ void MemoryManager::page_fault_(Process *process,
   frame_table_[frame_number].virtual_page_number = virtual_page_number;
 }
 
-int MemoryManager::get_victim_frame_() {
+int MemoryManager::get_victim_frame() {
   if (active_frame_queue_.empty()) {
     return 0;
   }
@@ -132,8 +131,8 @@ int MemoryManager::get_victim_frame_() {
             owner_process->get_page_table_entry(virtual_page_number);
 
         if (page_table_entry.dirty_bit) {
-          write_to_backing_store_(owner_process, virtual_page_number,
-                                  victim_frame);
+          write_to_backing_store(owner_process, virtual_page_number,
+                                 victim_frame);
           paged_out_count_++;
         }
 
@@ -152,9 +151,9 @@ int MemoryManager::get_victim_frame_() {
   return victim_frame;
 }
 
-void MemoryManager::write_to_backing_store_(Process *process,
-                                            uint32_t virtual_page_number,
-                                            int frame_number) {
+void MemoryManager::write_to_backing_store(Process *process,
+                                           uint32_t virtual_page_number,
+                                           int frame_number) {
   if (!backing_store_.is_open()) {
     throw std::runtime_error("Backing store file is not open.");
   }

@@ -48,8 +48,8 @@ private:
   uint64_t total_memory_usage_ = 0;
 
   // helpers
-  void page_fault_(Process *process, uint32_t virtual_page_number);
-  int get_victim_frame_();
-  void write_to_backing_store_(Process *process, uint32_t virtual_page_number,
-                               int frame_number);
+  void page_fault(Process *process, uint32_t virtual_page_number);
+  int get_victim_frame();
+  void write_to_backing_store(Process *process, uint32_t virtual_page_number,
+                              int frame_number);
 };
