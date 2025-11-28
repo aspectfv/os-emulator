@@ -72,4 +72,12 @@ private:
   uint32_t backing_store_offset_ = 0;
 
   bool access_violation_ = false;
+
+  // callback definitions
+  void add_log(int cpu_core_id, const std::string &message);
+  uint16_t get_variable(const std::string &var_name);
+  void add_variable(std::pair<std::string, uint16_t> var);
+  void add_instructions(
+      std::vector<std::unique_ptr<IInstruction>> &&new_instructions);
+  void sleep(int ticks);
 };

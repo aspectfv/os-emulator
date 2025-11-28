@@ -15,12 +15,11 @@ void Process::execute_current_instruction(int cpu_core_id) {
     instructions_[instruction_pointer_]->execute(
         {.add_log =
              [this, cpu_core_id](const std::string &message) {
-               this->logs_.push_back(
-                   ProcessLog{.core_id = cpu_core_id, .message = message});
+               this->add_log(cpu_core_id, message);
              },
          .get_variable =
              [this](const std::string &var_name) {
-               return this->symbol_table_[var_name];
+               return this->get_variable(var_name);
              },
          .add_variable =
              [this](std::pair<std::string, uint16_t> var) {
@@ -29,21 +28,10 @@ void Process::execute_current_instruction(int cpu_core_id) {
          .add_instructions =
              [this](std::vector<std::unique_ptr<IInstruction>>
                         &&new_instructions) {
-               // insert after current instruction
-               auto insert_pos =
-                   instructions_.begin() + instruction_pointer_ + 1;
-
-               instructions_.insert(
-                   insert_pos,
-                   std::make_move_iterator(new_instructions.begin()),
-                   std::make_move_iterator(new_instructions.end()));
+               this->add_instructions(std::move(new_instructions));
              },
 
-         .sleep =
-             [this](int ticks) {
-               this->sleep_ticks_ = ticks;
-               this->state_ = ProcessState::SLEEPING;
-             }});
+         .sleep = [this](int ticks) { this->sleep(ticks); }});
   }
 }
 
@@ -126,4 +114,26 @@ void Process::set_backing_store_offset(uint32_t offset) {
 }
 void Process::set_access_violation(bool violation) {
   access_violation_ = violation;
+}
+
+void Process::add_log(int cpu_core_id, const std::string &message) {
+  logs_.push_back(ProcessLog{.core_id = cpu_core_id, .message = message});
+}
+
+uint16_t Process::get_variable(const std::string &var_name) {
+  return symbol_table_[var_name];
+}
+
+void Process::add_instructions(
+    std::vector<std::unique_ptr<IInstruction>> &&new_instructions) {
+  auto insert_pos = instructions_.begin() + instruction_pointer_ + 1;
+
+  instructions_.insert(insert_pos,
+                       std::make_move_iterator(new_instructions.begin()),
+                       std::make_move_iterator(new_instructions.end()));
+}
+
+void Process::sleep(int ticks) {
+  sleep_ticks_ = ticks;
+  state_ = ProcessState::SLEEPING;
 }
