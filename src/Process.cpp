@@ -23,7 +23,7 @@ void Process::execute_current_instruction(int cpu_core_id) {
              },
          .add_variable =
              [this](std::pair<std::string, uint16_t> var) {
-               this->symbol_table_[var.first] = var.second;
+               this->add_variable(var);
              },
          .add_instructions =
              [this](std::vector<std::unique_ptr<IInstruction>>
@@ -122,6 +122,10 @@ void Process::add_log(int cpu_core_id, const std::string &message) {
 
 uint16_t Process::get_variable(const std::string &var_name) {
   return symbol_table_[var_name];
+}
+
+void Process::add_variable(std::pair<std::string, uint16_t> var) {
+  symbol_table_[var.first] = var.second;
 }
 
 void Process::add_instructions(
