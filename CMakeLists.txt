@@ -33,8 +33,8 @@ add_executable(OSEmulator
   src/instructions/Sleep.cpp
   src/instructions/For.cpp
   src/instructions/InstructionFactory.cpp
+  src/MemoryManager.cpp
   src/Utils.cpp
-
 )
 
 target_include_directories(OSEmulator PRIVATE include)
