@@ -59,7 +59,7 @@ private:
   std::string name_;
   std::string created_at_ = Utils::current_timestamp();
   std::vector<std::unique_ptr<IInstruction>> instructions_;
-  std::unordered_map<std::string, uint16_t> symbol_table_;
+  std::unordered_map<std::string, uint32_t> symbol_table_;
   uint32_t next_symbol_address_ = 0x40; // start at 64 bytes
   int total_instructions_;
   int instruction_pointer_ = 0;
