@@ -1,4 +1,5 @@
 #include "Process.hpp"
+#include "MemoryManager.hpp"
 
 // auto inc process id
 int Process::next_id_ = 0;
@@ -10,7 +11,8 @@ Process::Process(const std::string &name, int total_instructions,
   symbol_table_["x"] = 0; // required for mo1 demo
 }
 
-void Process::execute_current_instruction(int cpu_core_id) {
+void Process::execute_current_instruction(int cpu_core_id,
+                                          MemoryManager *memory_manager) {
   if (instruction_pointer_ < instructions_.size()) {
     instructions_[instruction_pointer_]->execute(
         {.add_log =
@@ -18,8 +20,8 @@ void Process::execute_current_instruction(int cpu_core_id) {
                this->add_log(cpu_core_id, message);
              },
          .get_variable =
-             [this](const std::string &var_name) {
-               return this->get_variable(var_name);
+             [this, memory_manager](const std::string &var_name) {
+               return this->get_variable(var_name, memory_manager);
              },
          .add_variable =
              [this](std::pair<std::string, uint16_t> var) {
@@ -120,8 +122,31 @@ void Process::add_log(int cpu_core_id, const std::string &message) {
   logs_.push_back(ProcessLog{.core_id = cpu_core_id, .message = message});
 }
 
-uint16_t Process::get_variable(const std::string &var_name) {
-  return symbol_table_[var_name];
+uint16_t Process::get_variable(const std::string &var_name,
+                               MemoryManager *memory_manager) {
+  uint16_t address = symbol_table_.at(var_name);
+  uint16_t value = 0;
+
+  MemoryAccessResult result = memory_manager->read(address, this, value);
+
+  if (result == MemoryAccessResult::ACCESS_VIOLATION) {
+    set_access_violation(true);
+    logs_.push_back(
+        ProcessLog{.core_id = -1,
+                   .message = "Access violation reading variable " + var_name});
+  } else if (result == MemoryAccessResult::ERROR) {
+    logs_.push_back(ProcessLog{.core_id = -1,
+                               .message = "Error reading variable " + var_name +
+                                          " at address " +
+                                          std::to_string(address)});
+  } else {
+    logs_.push_back(ProcessLog{.core_id = -1,
+                               .message = "Read variable " + var_name +
+                                          " with value " +
+                                          std::to_string(value)});
+  }
+
+  return value;
 }
 
 void Process::add_variable(std::pair<std::string, uint16_t> var) {

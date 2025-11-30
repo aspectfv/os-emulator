@@ -6,6 +6,8 @@
 #include <unordered_map>
 #include <vector>
 
+class MemoryManager;
+
 struct ProcessLog {
   std::string timestamp = Utils::current_timestamp();
   int core_id;
@@ -23,7 +25,8 @@ public:
   enum class ProcessState { NEW, READY, RUNNING, SLEEPING, TERMINATED };
 
   Process(const std::string &name, int total_instructions, int quantum_cycles);
-  void execute_current_instruction(int cpu_core_id);
+  void execute_current_instruction(int cpu_core_id,
+                                   MemoryManager *memory_manager);
   const int get_id() const;
   const std::string get_name() const;
   const std::string get_created_at() const;
@@ -75,7 +78,8 @@ private:
 
   // callback definitions
   void add_log(int cpu_core_id, const std::string &message);
-  uint16_t get_variable(const std::string &var_name);
+  uint16_t get_variable(const std::string &var_name,
+                        MemoryManager *memory_manager);
   void add_variable(std::pair<std::string, uint16_t> var);
   void add_instructions(
       std::vector<std::unique_ptr<IInstruction>> &&new_instructions);
