@@ -4,11 +4,11 @@
 
 class Read : public IInstruction {
 public:
-  Read(const std::string &var, const std::string memory_address);
+  Read(const std::string &var_name, uint32_t memory_address);
   void execute(InstructionContext context) override;
   std::unique_ptr<IInstruction> clone() override;
 
 private:
-  std::string var_;
-  std::string memory_address_;
+  std::string var_name_;
+  uint32_t memory_address_;
 };

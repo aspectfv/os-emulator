@@ -1,16 +1,13 @@
 #include "instructions/Read.hpp"
 
-Read::Read(const std::string &var, const std::string memory_address)
-    : var_(var), memory_address_(memory_address) {}
+Read::Read(const std::string &var_name, uint32_t memory_address)
+    : var_name_(var_name), memory_address_(memory_address) {}
 
 void Read::execute(InstructionContext context) {
-  uint16_t address = context.get_variable(memory_address_);
-  uint16_t value = context.get_variable(var_);
-
-  context.add_log("Read value " + std::to_string(value) +
-                  " from memory address " + std::to_string(address));
+  uint16_t value = context.read_from_address(memory_address_);
+  context.add_variable({var_name_, value});
 }
 
 std::unique_ptr<IInstruction> Read::clone() {
-  return std::make_unique<Read>(var_, memory_address_);
+  return std::make_unique<Read>(var_name_, memory_address_);
 }
