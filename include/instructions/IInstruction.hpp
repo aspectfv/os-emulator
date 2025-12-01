@@ -11,7 +11,7 @@ class IInstruction;
 struct InstructionContext {
   std::function<void(const std::string &)> add_log;
   std::function<uint16_t(const std::string &)> get_variable;
-  std::function<void(const std::string &)> add_variable;
+  std::function<void(std::pair<std::string, uint16_t>)> add_variable;
   std::function<void(std::vector<std::unique_ptr<IInstruction>> &&)>
       add_instructions;
   std::function<void(uint8_t)> sleep;

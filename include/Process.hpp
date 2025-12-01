@@ -80,7 +80,8 @@ private:
   void add_log(int cpu_core_id, const std::string &message);
   uint16_t get_variable(const std::string &var_name,
                         MemoryManager *memory_manager);
-  void add_variable(const std::string &var_name, MemoryManager *memory_manager);
+  void add_variable(std::pair<std::string, uint16_t> var,
+                    MemoryManager *memory_manager);
   void add_instructions(
       std::vector<std::unique_ptr<IInstruction>> &&new_instructions);
   void sleep(int ticks);
