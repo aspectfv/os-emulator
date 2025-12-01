@@ -85,4 +85,7 @@ private:
   void add_instructions(
       std::vector<std::unique_ptr<IInstruction>> &&new_instructions);
   void sleep(int ticks);
+  uint16_t read_from_address(uint32_t address, MemoryManager *memory_manager);
+  void write_to_address(uint32_t address, uint16_t value,
+                        MemoryManager *memory_manager);
 };

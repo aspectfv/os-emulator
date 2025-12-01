@@ -32,8 +32,15 @@ void Process::execute_current_instruction(int cpu_core_id,
                         &&new_instructions) {
                this->add_instructions(std::move(new_instructions));
              },
-
-         .sleep = [this](int ticks) { this->sleep(ticks); }});
+         .sleep = [this](int ticks) { this->sleep(ticks); },
+         .read_from_address =
+             [this, memory_manager](uint32_t address) {
+               return this->read_from_address(address, memory_manager);
+             },
+         .write_to_address =
+             [this, memory_manager](uint32_t address, uint16_t value) {
+               this->write_to_address(address, value, memory_manager);
+             }});
   }
 }
 
@@ -210,4 +217,64 @@ void Process::add_instructions(
 void Process::sleep(int ticks) {
   sleep_ticks_ = ticks;
   state_ = ProcessState::SLEEPING;
+}
+
+uint16_t Process::read_from_address(uint32_t address,
+                                    MemoryManager *memory_manager) {
+  uint16_t value = 0;
+
+  MemoryAccessResult result = memory_manager->read(address, this, value);
+
+  switch (result) {
+  case MemoryAccessResult::SUCCESS:
+    logs_.push_back(ProcessLog{.core_id = -1,
+                               .message = "Read from address " +
+                                          std::to_string(address) + " value " +
+                                          std::to_string(value)});
+    break;
+  case MemoryAccessResult::ACCESS_VIOLATION:
+    set_access_violation(true);
+    logs_.push_back(
+        ProcessLog{.core_id = -1,
+                   .message = "Access violation reading from address " +
+                              std::to_string(address)});
+    break;
+  case MemoryAccessResult::ERROR:
+    logs_.push_back(ProcessLog{.core_id = -1,
+                               .message = "Error reading from address " +
+                                          std::to_string(address)});
+    break;
+  default:
+    break;
+  }
+
+  return value;
+}
+
+void Process::write_to_address(uint32_t address, uint16_t value,
+                               MemoryManager *memory_manager) {
+  MemoryAccessResult result = memory_manager->write(address, this, value);
+
+  switch (result) {
+  case MemoryAccessResult::SUCCESS:
+    logs_.push_back(ProcessLog{.core_id = -1,
+                               .message = "Wrote to address " +
+                                          std::to_string(address) + " value " +
+                                          std::to_string(value)});
+    break;
+  case MemoryAccessResult::ACCESS_VIOLATION:
+    set_access_violation(true);
+    logs_.push_back(
+        ProcessLog{.core_id = -1,
+                   .message = "Access violation writing to address " +
+                              std::to_string(address)});
+    break;
+  case MemoryAccessResult::ERROR:
+    logs_.push_back(ProcessLog{.core_id = -1,
+                               .message = "Error writing to address " +
+                                          std::to_string(address)});
+    break;
+  default:
+    break;
+  }
 }

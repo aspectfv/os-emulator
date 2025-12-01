@@ -15,6 +15,8 @@ struct InstructionContext {
   std::function<void(std::vector<std::unique_ptr<IInstruction>> &&)>
       add_instructions;
   std::function<void(uint8_t)> sleep;
+  std::function<uint16_t(uint32_t)> read_from_address;
+  std::function<void(uint32_t, uint16_t)> write_to_address;
 };
 
 class IInstruction {
