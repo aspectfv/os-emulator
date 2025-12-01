@@ -5,10 +5,10 @@
 CPUCore::CPUCore(int id, const std::string scheduler, const int delay_per_exec)
     : id_(id), scheduler_(scheduler), delay_per_exec_(delay_per_exec) {}
 
-Process *CPUCore::tick() {
+Process *CPUCore::tick(MemoryManager *memory_manager) {
   busy_wait(delay_per_exec_);
 
-  current_process_->execute_current_instruction(id_);
+  current_process_->execute_current_instruction(id_, memory_manager);
   current_process_->increment_instruction_pointer();
 
   if (current_process_->get_state() == Process::ProcessState::TERMINATED) {

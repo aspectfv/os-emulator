@@ -52,13 +52,30 @@ bool Emulator::process_input(const std::string &input) {
 
 void Emulator::cycle(std::stop_token st) {
   while (!st.stop_requested()) {
+    int busy_cores = 0;
+    uint32_t available_frames = memory_manager_->get_free_frames_size();
+    uint32_t max_concurrent_processes = std::max(1u, available_frames);
+    uint32_t current_running_processes = 0;
+
+    for (auto &core : cores_) {
+      if (!core.is_idle())
+        current_running_processes++;
+    }
+
     // assign processes to idle cores
-    assign_processes();
+    busy_cores =
+        assign_processes(current_running_processes, max_concurrent_processes) +
+        current_running_processes;
+
+    // update cpu stats
+    total_cpu_ticks_ += cores_.size(); // each core = one tick
+    active_cpu_ticks_ += busy_cores;
+    idle_cpu_ticks_ += (cores_.size() - busy_cores);
 
     // tick all cores and collect returned processes
     std::vector<Process *> returned_processes = tick_cores();
 
-    // generate new processes if scheduler is running
+    // generate new processes if scheduler is .get()running
     if (scheduler_->is_running())
       generate_processes();
 
@@ -67,6 +84,17 @@ void Emulator::cycle(std::stop_token st) {
 
     // handle sleeping processes
     handle_sleeping_processes();
+
+    available_frames = memory_manager_->get_free_frames_size();
+    max_concurrent_processes = std::max(1u, available_frames);
+    current_running_processes = 0;
+
+    for (auto &core : cores_) {
+      if (!core.is_idle())
+        current_running_processes++;
+    }
+
+    assign_processes(current_running_processes, max_concurrent_processes);
 
     // sleep to prevent process from terminating too fast for debugging
     // std::this_thread::sleep_for(std::chrono::milliseconds(300)); // commented
@@ -82,13 +110,44 @@ void Emulator::cycle(std::stop_token st) {
   }
 }
 
-void Emulator::assign_processes() {
-  for (auto &core : cores_) {
-    if (core.is_idle() && scheduler_->has_processes()) {
+uint32_t Emulator::assign_processes(uint32_t current_running_processes,
+                                    uint32_t max_concurrent_processes) {
+  uint32_t assigned_processes = 0;
+
+  for (size_t i = 0;
+       i < cores_.size() && current_running_processes + assigned_processes <
+                                max_concurrent_processes;
+       ++i) {
+    if (cores_[i].is_idle() && scheduler_->has_processes()) {
       Process *next_process = scheduler_->get_next_process();
-      core.set_current_process(next_process);
+
+      if (next_process) {
+        bool is_registered =
+            memory_manager_->is_process_registered(next_process->get_id());
+
+        if (is_registered) {
+          // registered process alreaady has memory allocated
+          cores_[i].set_current_process(next_process);
+          assigned_processes++;
+        } else {
+          // check new process memory
+          uint32_t free_memory = memory_manager_->get_free_memory_size();
+          uint32_t process_memory_size = next_process->get_total_memory_size();
+
+          if (free_memory > process_memory_size) {
+            // enough memory, assign process
+            cores_[i].set_current_process(next_process);
+            assigned_processes++;
+          } else {
+            // not enough memory, schedule for later
+            scheduler_->add_process(next_process, true);
+          }
+        }
+      }
     }
   }
+
+  return assigned_processes;
 }
 
 std::vector<Process *> Emulator::tick_cores() {
@@ -103,7 +162,7 @@ std::vector<Process *> Emulator::tick_cores() {
     for (size_t i = 0; i < cores_.size(); ++i) {
       if (!cores_[i].is_idle()) {
         core_threads.emplace_back([this, i, &returned_processes]() {
-          returned_processes[i] = cores_[i].tick();
+          returned_processes[i] = cores_[i].tick(memory_manager_.get());
         });
       }
     }
@@ -124,9 +183,8 @@ void Emulator::generate_processes() {
         (rand() % (config_.get_max_ins() - config_.get_min_ins() + 1));
 
     /* std::vector<std::unique_ptr<IInstruction>> instructions =
-         InstructionFactory::create_instructions(process_name, num_instructions,
-                                                 config_.get_max_ins(),
-                                                 config_.get_min_ins());
+         InstructionFactory::create_instructions(process_name,
+       num_instructions, config_.get_max_ins(), config_.get_min_ins());
    */
 
     std::vector<std::unique_ptr<IInstruction>> instructions =
@@ -137,6 +195,18 @@ void Emulator::generate_processes() {
         process_name, num_instructions, config_.get_quantum_cycles());
 
     process->set_instructions(std::move(instructions));
+
+    uint32_t min_mem_per_process = config_.get_min_mem_per_proc();
+    uint32_t max_mem_per_process = config_.get_max_mem_per_proc();
+
+    uint32_t random_memory_size =
+        min_mem_per_process +
+        (rand() % (max_mem_per_process - min_mem_per_process + 1));
+
+    if (memory_manager_) {
+      memory_manager_->register_process(process.get(), random_memory_size,
+                                        config_.get_mem_per_frame());
+    }
 
     processes_[process_name] = std::move(process);
     scheduler_->add_process(processes_[process_name].get());
@@ -155,13 +225,35 @@ void Emulator::handle_returned_processes(
     switch (returned_process->get_state()) {
     case Process::ProcessState::TERMINATED:
       terminated_processes_.push_back(returned_process);
+
+      if (memory_manager_) {
+        memory_manager_->remove_process(returned_process->get_id());
+      }
       break;
     case Process::ProcessState::READY: {
       scheduler_->add_process(returned_process);
 
-      if (scheduler_->has_processes()) {
+      if (cores_[i].is_idle() && scheduler_->has_processes()) {
         Process *next_process = scheduler_->get_next_process();
-        cores_[i].set_current_process(next_process);
+
+        if (next_process) {
+          bool is_registered =
+              memory_manager_->is_process_registered(next_process->get_id());
+
+          if (is_registered) {
+            cores_[i].set_current_process(next_process);
+          } else {
+            uint32_t free_memory = memory_manager_->get_free_memory_size();
+            uint32_t process_memory_size =
+                next_process->get_total_memory_size();
+
+            if (free_memory > process_memory_size) {
+              cores_[i].set_current_process(next_process);
+            } else {
+              scheduler_->add_process(next_process, true);
+            }
+          }
+        }
       }
 
       break;
@@ -273,9 +365,8 @@ void Emulator::start_screen(std::vector<std::string> &args) {
         (rand() % (config_.get_max_ins() - config_.get_min_ins() + 1));
 
     /* std::vector<std::unique_ptr<IInstruction>> instructions =
-        InstructionFactory::create_instructions(process_name, num_instructions,
-                                                config_.get_max_ins(),
-                                                config_.get_min_ins());
+        InstructionFactory::create_instructions(process_name,
+       num_instructions, config_.get_max_ins(), config_.get_min_ins());
     */
 
     std::vector<std::unique_ptr<IInstruction>> instructions =
@@ -535,7 +626,8 @@ void Emulator::process_smi() {
   }
   */
 
-  // used to limit log output to first 100 entries to avoid bloating the screen
+  // used to limit log output to first 100 entries to avoid bloating the
+  // screen
   int loop_count = current_process_->get_logs().size() <= 100
                        ? current_process_->get_logs().size()
                        : 100;

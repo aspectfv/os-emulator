@@ -52,7 +52,8 @@ private:
   void cycle(std::stop_token st);
 
   // cycle helpers
-  void assign_processes();
+  uint32_t assign_processes(uint32_t current_running_processes,
+                            uint32_t max_concurrent_processes);
   std::vector<Process *> tick_cores();
   void generate_processes();
   void
