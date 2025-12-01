@@ -24,8 +24,8 @@ void Process::execute_current_instruction(int cpu_core_id,
                return this->get_variable(var_name, memory_manager);
              },
          .add_variable =
-             [this](std::pair<std::string, uint16_t> var) {
-               this->add_variable(var);
+             [this, memory_manager](const std::string &var_name) {
+               this->add_variable(var_name, memory_manager);
              },
          .add_instructions =
              [this](std::vector<std::unique_ptr<IInstruction>>
@@ -149,8 +149,33 @@ uint16_t Process::get_variable(const std::string &var_name,
   return value;
 }
 
-void Process::add_variable(std::pair<std::string, uint16_t> var) {
-  symbol_table_[var.first] = var.second;
+void Process::add_variable(const std::string &var_name,
+                           MemoryManager *memory_manager) {
+  if (symbol_table_.find(var_name) == symbol_table_.end()) {
+    symbol_table_[var_name] = next_symbol_address_;
+    next_symbol_address_ += sizeof(uint16_t); // assuming 2 bytes per variable
+  }
+
+  uint32_t address = symbol_table_.at(var_name);
+
+  MemoryAccessResult result = memory_manager->write(address, this, 0);
+
+  if (result == MemoryAccessResult::ACCESS_VIOLATION) {
+    set_access_violation(true);
+    logs_.push_back(ProcessLog{
+        .core_id = -1,
+        .message = "Access violation initializing variable " + var_name});
+  } else if (result == MemoryAccessResult::ERROR) {
+    logs_.push_back(ProcessLog{.core_id = -1,
+                               .message = "Error initializing variable " +
+                                          var_name + " at address " +
+                                          std::to_string(address)});
+  } else {
+    logs_.push_back(ProcessLog{.core_id = -1,
+                               .message = "Initialized variable " + var_name +
+                                          " at address " +
+                                          std::to_string(address)});
+  }
 }
 
 void Process::add_instructions(
