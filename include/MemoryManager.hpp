@@ -67,6 +67,10 @@ private:
   // helpers
   void page_fault(Process *process, uint32_t virtual_page_number);
   int get_victim_frame();
-  void write_to_backing_store(Process *process, uint32_t virtual_page_number,
-                              int frame_number);
+  void read_page_from_backing_store(Process *process,
+                                    uint32_t virtual_page_number,
+                                    int frame_number);
+  void write_page_to_backing_store(Process *process,
+                                   uint32_t virtual_page_number,
+                                   int frame_number);
 };

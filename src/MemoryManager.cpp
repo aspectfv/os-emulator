@@ -220,6 +220,17 @@ void MemoryManager::page_fault(Process *process, uint32_t virtual_page_number) {
   frame_table_[frame_number].is_allocated = true;
   frame_table_[frame_number].owner_process_id = process->get_id();
   frame_table_[frame_number].virtual_page_number = virtual_page_number;
+
+  read_page_from_backing_store(process, virtual_page_number, frame_number);
+
+  // update process page table
+  process->get_page_table_entry(virtual_page_number).valid_bit = true;
+  process->get_page_table_entry(virtual_page_number).dirty_bit = false;
+  process->get_page_table_entry(virtual_page_number).frame_number =
+      frame_number;
+
+  // always add newly allocated frame to the back of the active frame queue
+  active_frame_queue_.push(frame_number);
 }
 
 int MemoryManager::get_victim_frame() {
@@ -245,8 +256,8 @@ int MemoryManager::get_victim_frame() {
             owner_process->get_page_table_entry(virtual_page_number);
 
         if (page_table_entry.dirty_bit) {
-          write_to_backing_store(owner_process, virtual_page_number,
-                                 victim_frame);
+          write_page_to_backing_store(owner_process, virtual_page_number,
+                                      victim_frame);
           paged_out_count_++;
         }
 
@@ -265,9 +276,9 @@ int MemoryManager::get_victim_frame() {
   return victim_frame;
 }
 
-void MemoryManager::write_to_backing_store(Process *process,
-                                           uint32_t virtual_page_number,
-                                           int frame_number) {
+void MemoryManager::read_page_from_backing_store(Process *process,
+                                                 uint32_t virtual_page_number,
+                                                 int frame_number) {
   if (!backing_store_.is_open()) {
     throw std::runtime_error("Backing store file is not open.");
   }
@@ -275,6 +286,28 @@ void MemoryManager::write_to_backing_store(Process *process,
   uint32_t backing_store_offset = process->get_backing_store_offset() +
                                   virtual_page_number * mem_per_frame_;
 
+  // get phyiscal memory address of the frame
+  uint32_t frame_start_address = frame_number * mem_per_frame_;
+
+  backing_store_.seekg(backing_store_offset, std::ios::beg);
+  backing_store_.read(&physical_memory_[frame_start_address], mem_per_frame_);
+
+  if (backing_store_.fail()) {
+    throw std::runtime_error("Failed to read from backing store.");
+  }
+}
+
+void MemoryManager::write_page_to_backing_store(Process *process,
+                                                uint32_t virtual_page_number,
+                                                int frame_number) {
+  if (!backing_store_.is_open()) {
+    throw std::runtime_error("Backing store file is not open.");
+  }
+
+  uint32_t backing_store_offset = process->get_backing_store_offset() +
+                                  virtual_page_number * mem_per_frame_;
+
+  // get phyiscal memory address of the frame
   uint32_t frame_start_address = frame_number * mem_per_frame_;
 
   backing_store_.seekp(backing_store_offset, std::ios::beg);
