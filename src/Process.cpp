@@ -124,7 +124,12 @@ void Process::add_log(int cpu_core_id, const std::string &message) {
 
 uint16_t Process::get_variable(const std::string &var_name,
                                MemoryManager *memory_manager) {
-  uint16_t address = symbol_table_.at(var_name);
+  if (symbol_table_.find(var_name) == symbol_table_.end()) {
+    symbol_table_[var_name] = next_symbol_address_;
+    next_symbol_address_ += sizeof(uint16_t); // assuming 2 bytes per variable
+  }
+
+  uint32_t address = symbol_table_.at(var_name);
   uint16_t value = 0;
 
   MemoryAccessResult result = memory_manager->read(address, this, value);
@@ -157,28 +162,30 @@ uint16_t Process::get_variable(const std::string &var_name,
 
 void Process::add_variable(std::pair<std::string, uint16_t> var,
                            MemoryManager *memory_manager) {
+  std::string var_name = var.first;
+  uint16_t value = var.second;
 
-  if (symbol_table_.find(var.first) == symbol_table_.end()) {
-    symbol_table_[var.first] = next_symbol_address_;
+  if (symbol_table_.find(var_name) == symbol_table_.end()) {
+    symbol_table_[var_name] = next_symbol_address_;
     next_symbol_address_ += sizeof(uint16_t); // assuming 2 bytes per variable
   }
 
-  uint32_t address = symbol_table_.at(var.first);
+  uint32_t address = symbol_table_.at(var_name);
 
-  MemoryAccessResult result = memory_manager->write(address, this, var.second);
+  MemoryAccessResult result = memory_manager->write(address, this, value);
 
   switch (result) {
   case MemoryAccessResult::SUCCESS:
     logs_.push_back(ProcessLog{.core_id = -1,
-                               .message = "Wrote variable " + var.first +
+                               .message = "Wrote variable " + var_name +
                                           " with value " +
-                                          std::to_string(var.second)});
+                                          std::to_string(value)});
     break;
   case MemoryAccessResult::ACCESS_VIOLATION:
     set_access_violation(true);
-    logs_.push_back(ProcessLog{.core_id = -1,
-                               .message = "Access violation writing variable " +
-                                          var.first});
+    logs_.push_back(
+        ProcessLog{.core_id = -1,
+                   .message = "Access violation writing variable " + var_name});
     break;
   case MemoryAccessResult::ERROR:
     logs_.push_back(ProcessLog{.core_id = -1,
