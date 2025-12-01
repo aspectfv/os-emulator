@@ -129,21 +129,27 @@ uint16_t Process::get_variable(const std::string &var_name,
 
   MemoryAccessResult result = memory_manager->read(address, this, value);
 
-  if (result == MemoryAccessResult::ACCESS_VIOLATION) {
-    set_access_violation(true);
-    logs_.push_back(
-        ProcessLog{.core_id = -1,
-                   .message = "Access violation reading variable " + var_name});
-  } else if (result == MemoryAccessResult::ERROR) {
-    logs_.push_back(ProcessLog{.core_id = -1,
-                               .message = "Error reading variable " + var_name +
-                                          " at address " +
-                                          std::to_string(address)});
-  } else {
+  switch (result) {
+  case MemoryAccessResult::SUCCESS:
     logs_.push_back(ProcessLog{.core_id = -1,
                                .message = "Read variable " + var_name +
                                           " with value " +
                                           std::to_string(value)});
+    break;
+  case MemoryAccessResult::ACCESS_VIOLATION:
+    set_access_violation(true);
+    logs_.push_back(
+        ProcessLog{.core_id = -1,
+                   .message = "Access violation reading variable " + var_name});
+    break;
+  case MemoryAccessResult::ERROR:
+    logs_.push_back(ProcessLog{.core_id = -1,
+                               .message = "Error reading variable " + var_name +
+                                          " at address " +
+                                          std::to_string(address)});
+    break;
+  default:
+    break;
   }
 
   return value;
@@ -161,21 +167,27 @@ void Process::add_variable(std::pair<std::string, uint16_t> var,
 
   MemoryAccessResult result = memory_manager->write(address, this, var.second);
 
-  if (result == MemoryAccessResult::ACCESS_VIOLATION) {
-    set_access_violation(true);
-    logs_.push_back(ProcessLog{
-        .core_id = -1,
-        .message = "Access violation initializing variable " + var.first});
-  } else if (result == MemoryAccessResult::ERROR) {
+  switch (result) {
+  case MemoryAccessResult::SUCCESS:
     logs_.push_back(ProcessLog{.core_id = -1,
-                               .message = "Error initializing variable " +
+                               .message = "Wrote variable " + var.first +
+                                          " with value " +
+                                          std::to_string(var.second)});
+    break;
+  case MemoryAccessResult::ACCESS_VIOLATION:
+    set_access_violation(true);
+    logs_.push_back(ProcessLog{.core_id = -1,
+                               .message = "Access violation writing variable " +
+                                          var.first});
+    break;
+  case MemoryAccessResult::ERROR:
+    logs_.push_back(ProcessLog{.core_id = -1,
+                               .message = "Error writing variable " +
                                           var.first + " at address " +
                                           std::to_string(address)});
-  } else {
-    logs_.push_back(ProcessLog{.core_id = -1,
-                               .message = "Initialized variable " + var.first +
-                                          " at address " +
-                                          std::to_string(address)});
+    break;
+  default:
+    break;
   }
 }
 
