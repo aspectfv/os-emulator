@@ -35,6 +35,9 @@ Emulator::Emulator() {
   parser_.registerCommand(
       "process-smi",
       [this](const std::vector<std::string> &args) { this->process_smi(); });
+  parser_.registerCommand(
+      "vmstat",
+      [this](const std::vector<std::string> &args) { this->vmstat(); });
 }
 
 bool Emulator::process_input(const std::string &input) {
