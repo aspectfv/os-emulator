@@ -79,7 +79,6 @@ private:
   // report helper
   void log_cpu_util_report(std::ostream &output_stream);
 
-  // screen command handlers
   void process_smi();
   void vmstat();
 };
