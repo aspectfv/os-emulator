@@ -152,7 +152,6 @@ uint32_t MemoryManager::get_used_memory_size() const {
 }
 
 uint32_t MemoryManager::get_free_memory_size() const {
-  std::lock_guard<std::mutex> lock(memory_mutex_);
   return get_total_memory_size() - get_used_memory_size();
 }
 
