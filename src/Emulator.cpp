@@ -612,15 +612,15 @@ void Emulator::log_cpu_util_report(std::ostream &output_stream) {
 }
 
 void Emulator::process_smi() {
-  if (!is_initialized_)
-    throw std::runtime_error("Emulator is not initialized.");
-
   // Wait for the current cycle to finish to ensure we get a consistent report
   {
     std::unique_lock<std::mutex> lock(mtx_);
     cv_.wait(lock, [this] { return cycle_finished_; });
     cycle_finished_ = false;
   }
+
+  if (!is_initialized_)
+    throw std::runtime_error("Emulator is not initialized.");
 
   // 1. Calculate CPU Utilization
   int busy_cores = 0;
@@ -698,8 +698,8 @@ void Emulator::vmstat() {
     cycle_finished_ = false;
   }
 
-  if (!memory_manager_)
-    throw std::runtime_error("Memory manager not initialized.");
+  if (!is_initialized_)
+    throw std::runtime_error("Emulator is not initialized.");
 
   // memory stats
   uint32_t total_mem_size = memory_manager_->get_total_memory_size();
