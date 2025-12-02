@@ -606,11 +606,10 @@ void Emulator::log_cpu_util_report(std::ostream &output_stream) {
     }
     */
 
-    // used to limit log output to first 100 entries to avoid bloating the
+    // used to limit log output to first 10 entries to avoid bloating the
     // file/screen
-    int loop_count = terminated_processes_.size() <= 100
-                         ? terminated_processes_.size()
-                         : 100;
+    int loop_count =
+        terminated_processes_.size() <= 10 ? terminated_processes_.size() : 10;
 
     for (int i = 0; i < loop_count; ++i) {
       const auto &finished_process = terminated_processes_[i];
