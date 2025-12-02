@@ -291,12 +291,19 @@ void MemoryManager::read_page_from_backing_store(Process *process,
   // get phyiscal memory address of the frame
   uint32_t frame_start_address = frame_number * mem_per_frame_;
 
+  // 1. Zero out the frame first (Pre-fill with 0) using std::fill
+  // This avoids C-style memset issues
+  auto start_iter = physical_memory_.begin() + frame_start_address;
+  std::fill(start_iter, start_iter + mem_per_frame_, 0);
+
+  // 2. Attempt to read from backing store
   backing_store_.seekg(backing_store_offset, std::ios::beg);
   backing_store_.read(&physical_memory_[frame_start_address], mem_per_frame_);
 
-  if (backing_store_.fail()) {
-    throw std::runtime_error("Failed to read from backing store.");
-  }
+  // 3. Clear flags regardless of success/failure
+  // If read failed (e.g. EOF because file is empty), gcount will be 0,
+  // and our memory remains 0-filled from step 1.
+  backing_store_.clear();
 }
 
 void MemoryManager::write_page_to_backing_store(Process *process,
