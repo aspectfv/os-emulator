@@ -184,15 +184,20 @@ void Emulator::generate_processes() {
     int num_instructions =
         config_.get_min_ins() +
         (rand() % (config_.get_max_ins() - config_.get_min_ins() + 1));
-
-    /* std::vector<std::unique_ptr<IInstruction>> instructions =
+    /*
+     std::vector<std::unique_ptr<IInstruction>> instructions =
          InstructionFactory::create_instructions(process_name,
        num_instructions, config_.get_max_ins(), config_.get_min_ins());
    */
 
+    /*
     std::vector<std::unique_ptr<IInstruction>> instructions =
         InstructionFactory::create_mo1_demo_instructions(process_name,
                                                          num_instructions);
+    */
+
+    std::vector<std::unique_ptr<IInstruction>> instructions =
+        InstructionFactory::create_hardcoded_instructions(process_name);
 
     std::unique_ptr<Process> process = std::make_unique<Process>(
         process_name, num_instructions, config_.get_quantum_cycles());
@@ -372,9 +377,14 @@ void Emulator::start_screen(std::vector<std::string> &args) {
        num_instructions, config_.get_max_ins(), config_.get_min_ins());
     */
 
+    /*
     std::vector<std::unique_ptr<IInstruction>> instructions =
         InstructionFactory::create_mo1_demo_instructions(process_name,
                                                          num_instructions);
+    */
+
+    std::vector<std::unique_ptr<IInstruction>> instructions =
+        InstructionFactory::create_hardcoded_instructions(process_name);
 
     std::unique_ptr<Process> new_process = std::make_unique<Process>(
         process_name, num_instructions, config_.get_quantum_cycles());

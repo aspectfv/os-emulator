@@ -202,6 +202,77 @@ InstructionFactory::create_instructions_from_string(const std::string &code) {
   return instructions;
 }
 
+std::vector<std::unique_ptr<IInstruction>>
+InstructionFactory::create_hardcoded_instructions(
+    const std::string &process_name) {
+  std::vector<std::unique_ptr<IInstruction>> instructions;
+
+  // === HEADER ===
+  instructions.push_back(
+      create_print("=== ADVANCED FIFO & BACKING STORE TEST START ==="));
+
+  // === PHASE 1: Setup - Fill memory and make pages dirty ===
+  instructions.push_back(
+      create_print("PHASE 1: Filling all 4 frames with dirty pages..."));
+
+  // Write 100 to address 0x00 (Page 0)
+  instructions.push_back(create_write(0x00, 100));
+
+  // Write 200 to address 0x20 (Page 1)
+  // Assumes 32-byte frames as per config.txt
+  instructions.push_back(create_write(0x20, 200));
+  instructions.push_back(create_write(0x40, 300));
+  instructions.push_back(create_write(0x60, 400));
+
+  instructions.push_back(create_print("PHASE 1 Complete. Memory is full."));
+
+  // === PHASE 2: Test Dirty Page Eviction ===
+  instructions.push_back(
+      create_print("PHASE 2: Forcing eviction of a dirty page (Page 0)..."));
+
+  // Access Page 4 (Address 0x80 / 128) -> Evicts Page 0 (FIFO)
+  instructions.push_back(create_write(0x80, 500));
+
+  instructions.push_back(
+      create_print("PHASE 2 Complete. Page 0 should have been saved."));
+
+  // === PHASE 3: Test Clean Page Eviction ===
+  instructions.push_back(
+      create_print("PHASE 3: Forcing eviction of a clean page..."));
+
+  // Read from Page 5 (Address 0xA0 / 160) - Loads it cleanly (no dirty bit)
+  instructions.push_back(create_read("dummyVar1", 0xA0));
+
+  // Force eviction of other pages to cycle back to evicting the clean one
+  // Page 6
+  instructions.push_back(create_write(0xC0, 700));
+  // Page 7
+  instructions.push_back(create_write(0xE0, 800));
+  // Page 8
+  instructions.push_back(create_write(0x100, 900));
+
+  // This access should evict the clean Page 5
+  instructions.push_back(create_write(0x120, 1000));
+
+  instructions.push_back(create_print("PHASE 3 Complete."));
+
+  // === PHASE 5: Verification ===
+  instructions.push_back(
+      create_print("PHASE 5: Verifying data persistence..."));
+
+  // Read from Page 0 (Address 0x00) -> Should reload 100 from backing store
+  instructions.push_back(create_read("verifyVal", 0x00));
+
+  // Print the value. Note: Your Print instruction handles "Value from: var"
+  // logic
+  instructions.push_back(
+      create_print("Value from: \"verifyVal\"")); // Expected: 100
+
+  instructions.push_back(create_print("=== TEST COMPLETE ==="));
+
+  return instructions;
+}
+
 std::unique_ptr<Print>
 InstructionFactory::create_print(const std::string &msg) {
   return std::make_unique<Print>(msg);
@@ -232,6 +303,16 @@ InstructionFactory::create_for(const std::string &process_name,
       create_instructions(process_name, num_instructions, max_ins, min_ins,
                           start_depth + 1, max_depth),
       repeats);
+}
+
+std::unique_ptr<Read>
+InstructionFactory::create_read(const std::string &var_name, uint32_t address) {
+  return std::make_unique<Read>(var_name, address);
+}
+
+std::unique_ptr<Write> InstructionFactory::create_write(uint32_t address,
+                                                        uint16_t value) {
+  return std::make_unique<Write>(address, value);
 }
 
 // helpers

@@ -4,7 +4,9 @@
 #include "instructions/For.hpp"
 #include "instructions/IInstruction.hpp"
 #include "instructions/Print.hpp"
+#include "instructions/Read.hpp"
 #include "instructions/Sleep.hpp"
+#include "instructions/Write.hpp"
 #include <memory>
 #include <string>
 #include <vector>
@@ -31,6 +33,8 @@ public:
                                int num_instructions);
   static std::vector<std::unique_ptr<IInstruction>>
   create_instructions_from_string(const std::string &code);
+  static std::vector<std::unique_ptr<IInstruction>>
+  create_hardcoded_instructions(const std::string &process_name);
 
 private:
   static std::unique_ptr<Print> create_print(const std::string &msg);
@@ -43,6 +47,10 @@ private:
   static std::unique_ptr<For>
   create_for(const std::string &process_name, int num_instructions, int min_ins,
              int max_ins, int repeats, int start_depth = 0, int max_depth = 3);
+  static std::unique_ptr<Read> create_read(const std::string &var_name,
+                                           uint32_t memory_address);
+  static std::unique_ptr<Write> create_write(uint32_t memory_address,
+                                             uint16_t value);
 
   // helpers
   static Arithmetic::Operand random_operand();
