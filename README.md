@@ -21,7 +21,7 @@ The project uses CMake for its build system. Execute the following commands from
 cmake -S . -B build
 
 # 2. Compile the project (assuming a Unix-like environment or Ninja/Make setup)
-cmake --build .
+cmake --build build
 
 ```
 
