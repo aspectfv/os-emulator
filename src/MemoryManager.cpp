@@ -95,9 +95,11 @@ void MemoryManager::register_process(Process *process, uint32_t size,
 
   process->set_total_memory_size(size);
   process->set_backing_store_offset(next_backing_store_pos);
+  next_backing_store_pos += size;
 
   uint32_t num_pages =
       (size + mem_per_frame - 1) / mem_per_frame; // ceiling division
+  process->set_page_table_size(num_pages);
 
   uint32_t actual_memory_allocated = num_pages * mem_per_frame;
   total_memory_usage_ += actual_memory_allocated;

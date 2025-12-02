@@ -49,6 +49,7 @@ public:
   void set_quantum_remaining(int quantum_cycles);
   void decrement_quantum_remaining();
   void decrement_sleep_ticks();
+  void set_page_table_size(int size);
   void set_total_memory_size(uint32_t size);
   void set_backing_store_offset(uint32_t offset);
   void set_access_violation(bool violation);

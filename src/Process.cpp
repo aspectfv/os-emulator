@@ -114,6 +114,8 @@ void Process::decrement_sleep_ticks() {
     state_ = ProcessState::READY;
 }
 
+void Process::set_page_table_size(int size) { page_table_.resize(size); }
+
 void Process::set_total_memory_size(uint32_t size) {
   total_memory_size_ = size;
 }
