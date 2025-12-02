@@ -296,6 +296,9 @@ void MemoryManager::read_page_from_backing_store(Process *process,
   auto start_iter = physical_memory_.begin() + frame_start_address;
   std::fill(start_iter, start_iter + mem_per_frame_, 0);
 
+  // clear any eof/fail flags before reading
+  backing_store_.clear();
+
   // 2. Attempt to read from backing store
   backing_store_.seekg(backing_store_offset, std::ios::beg);
   backing_store_.read(&physical_memory_[frame_start_address], mem_per_frame_);
