@@ -615,42 +615,74 @@ void Emulator::process_smi() {
   if (!is_initialized_)
     throw std::runtime_error("Emulator is not initialized.");
 
-  if (!current_process_)
-    throw std::runtime_error("No current process to handle SMI.");
-
-  std::cout << "Process Name: " << current_process_->get_name() << std::endl;
-  std::cout << "ID: " << current_process_->get_id() << std::endl;
-  std::cout << "Logs: " << std::endl;
-
-  /* for (const ProcessLog &log : current_process_->get_logs()) {
-    std::cout << "(" << log.timestamp << ") "
-              << "Core " << log.core_id << ": " << "\"" << log.message << "\""
-              << std::endl;
-  }
-  */
-
-  // used to limit log output to first 100 entries to avoid bloating the
-  // screen
-  int loop_count = current_process_->get_logs().size() <= 100
-                       ? current_process_->get_logs().size()
-                       : 100;
-
-  for (int i = 0; i < loop_count; ++i) {
-    const ProcessLog &log = current_process_->get_logs()[i];
-    std::cout << "(" << log.timestamp << ") "
-              << "Core " << log.core_id << ": " << "\"" << log.message << "\""
-              << std::endl;
+  // Wait for the current cycle to finish to ensure we get a consistent report
+  {
+    std::unique_lock<std::mutex> lock(mtx_);
+    cv_.wait(lock, [this] { return cycle_finished_; });
+    cycle_finished_ = false;
   }
 
-  if (current_process_->get_state() == Process::ProcessState::TERMINATED) {
-    std::cout << "Finished!" << std::endl;
-  } else {
-    std::cout << "Current instruction line: "
-              << current_process_->get_instruction_pointer() << std::endl;
-
-    std::cout << "Lines of code: " << current_process_->get_total_instructions()
-              << std::endl;
+  // 1. Calculate CPU Utilization
+  int busy_cores = 0;
+  for (const auto &core : cores_) {
+    if (!core.is_idle()) {
+      busy_cores++;
+    }
   }
+
+  // Avoid division by zero if no cores (unlikely if initialized)
+  int cpu_utilization = cores_.empty() ? 0 : (busy_cores * 100) / cores_.size();
+
+  // 2. Calculate Memory Usage
+  // We use the MemoryManager to get accurate stats
+  uint32_t total_mem = memory_manager_->get_total_memory_size();
+  uint32_t used_mem = memory_manager_->get_used_memory_size();
+
+  // Calculate percentage, utilizing uint64_t for multiplication to prevent
+  // overflow
+  int mem_utilization =
+      total_mem > 0 ? static_cast<int>((static_cast<uint64_t>(used_mem) * 100) /
+                                       total_mem)
+                    : 0;
+
+  // 3. Print Header and Stats
+  std::cout << "\n--------------------------------------------" << std::endl;
+  std::cout << "| PROCESS-SMI V01.00 Driver Version: 01.00 |" << std::endl;
+  std::cout << "--------------------------------------------" << std::endl;
+  std::cout << "CPU-Util: " << cpu_utilization << "%" << std::endl;
+  std::cout << "Memory Usage: " << used_mem << "B / " << total_mem << "B"
+            << std::endl;
+  std::cout << "Memory Util: " << mem_utilization << "%" << std::endl;
+  std::cout << "\n============================================" << std::endl;
+  std::cout << "Running processes and memory usage:" << std::endl;
+  std::cout << "--------------------------------------------" << std::endl;
+
+  // 4. List Processes and their Memory Usage
+  // Get the map of pid -> bytes used from MemoryManager
+  std::unordered_map<int, uint32_t> process_mem_usage =
+      memory_manager_->get_all_processes_memory_usage();
+
+  // Iterate through our process list to match IDs with Names
+  bool any_process_printed = false;
+  for (const auto &pair : processes_) {
+    const auto &process = pair.second;
+    int pid = process->get_id();
+
+    // Check if this process has allocated frames in memory
+    if (process_mem_usage.find(pid) != process_mem_usage.end()) {
+      // Only show processes that are currently holding memory
+      // (This aligns with "Running processes and memory usage")
+      std::cout << process->get_name() << " " << process_mem_usage[pid] << "B"
+                << std::endl;
+      any_process_printed = true;
+    }
+  }
+
+  if (!any_process_printed) {
+    std::cout << "No processes currently holding memory frames." << std::endl;
+  }
+
+  std::cout << "--------------------------------------------" << std::endl;
 }
 
 void Emulator::vmstat() {
