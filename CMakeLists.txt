@@ -32,6 +32,8 @@ add_executable(OSEmulator
   src/instructions/Arithmetic.cpp
   src/instructions/Sleep.cpp
   src/instructions/For.cpp
+  src/instructions/Read.cpp
+  src/instructions/Write.cpp
   src/instructions/InstructionFactory.cpp
   src/MemoryManager.cpp
   src/Utils.cpp
