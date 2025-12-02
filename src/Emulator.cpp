@@ -662,24 +662,29 @@ void Emulator::process_smi() {
   std::unordered_map<int, uint32_t> process_mem_usage =
       memory_manager_->get_all_processes_memory_usage();
 
-  // Iterate through our process list to match IDs with Names
-  bool any_process_printed = false;
-  for (const auto &pair : processes_) {
-    const auto &process = pair.second;
-    int pid = process->get_id();
+  // show running processes
+  bool has_running_processes = false;
 
-    // Check if this process has allocated frames in memory
-    if (process_mem_usage.find(pid) != process_mem_usage.end()) {
-      // Only show processes that are currently holding memory
-      // (This aligns with "Running processes and memory usage")
-      std::cout << process->get_name() << " " << process_mem_usage[pid] << "B"
-                << std::endl;
-      any_process_printed = true;
+  for (auto &core : cores_) {
+    if (!core.is_idle()) {
+      Process *process = core.get_current_process();
+      if (process) {
+        has_running_processes = true;
+        int pid = process->get_id();
+        uint32_t mem_used = 0;
+
+        auto mem_it = process_mem_usage.find(pid);
+        if (mem_it != process_mem_usage.end()) {
+          mem_used = mem_it->second;
+        }
+
+        std::cout << process->get_name() << " " << mem_used << "B" << std::endl;
+      }
     }
   }
 
-  if (!any_process_printed) {
-    std::cout << "No processes currently holding memory frames." << std::endl;
+  if (!has_running_processes) {
+    std::cout << "No running processes." << std::endl;
   }
 
   std::cout << "--------------------------------------------" << std::endl;

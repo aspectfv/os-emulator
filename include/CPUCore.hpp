@@ -7,6 +7,7 @@ public:
   Process *tick(MemoryManager *memory_manager);
   const bool is_idle() const;
   const Process *get_current_process() const;
+  Process *get_current_process();
   void set_current_process(Process *process);
 
 private:

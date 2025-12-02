@@ -45,6 +45,8 @@ const bool CPUCore::is_idle() const { return current_process_ == nullptr; }
 
 const Process *CPUCore::get_current_process() const { return current_process_; }
 
+Process *CPUCore::get_current_process() { return current_process_; }
+
 void CPUCore::set_current_process(Process *process) {
   current_process_ = process;
 
