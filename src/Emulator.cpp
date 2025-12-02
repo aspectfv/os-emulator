@@ -646,10 +646,7 @@ void Emulator::process_smi() {
                     : 0;
 
   // 3. Print Header and Stats
-  std::cout << "\n--------------------------------------------" << std::endl;
-  std::cout << "| PROCESS-SMI V01.00 Driver Version: 01.00 |" << std::endl;
-  std::cout << "--------------------------------------------" << std::endl;
-  std::cout << "CPU-Util: " << cpu_utilization << "%" << std::endl;
+  std::cout << "\nCPU-Util: " << cpu_utilization << "%" << std::endl;
   std::cout << "Memory Usage: " << used_mem << "B / " << total_mem << "B"
             << std::endl;
   std::cout << "Memory Util: " << mem_utilization << "%" << std::endl;
